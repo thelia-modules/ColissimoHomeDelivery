@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database defaultIdMethod="native" name="thelia"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="../../../../core/vendor/propel/propel/resources/xsd/database.xsd" >
+
+    <table name="colissimo_home_delivery_price_slices" namespace="ColissimoHomeDelivery\Model">
+        <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER" />
+        <column name="area_id" type="INTEGER" required="true"/>
+        <column name="max_weight" type="FLOAT"/>
+        <column name="max_price" type="FLOAT"/>
+        <column name="shipping" type="FLOAT" required="true"/>
+
+        <foreign-key foreignTable="area" name="fk_colissimo_home_delivery_price_slices_area_id" onDelete="RESTRICT" onUpdate="RESTRICT">
+            <reference foreign="id" local="area_id" />
+        </foreign-key>
+    </table>
+
+    <table name="colissimo_home_delivery_freeshipping" namespace="ColissimoHomeDelivery\Model">
+        <column name="id" primaryKey="true" required="true" type="INTEGER" />
+        <column name="active" type="BOOLEAN" default="0"/>
+        <column name="freeshipping_from" size="18" scale="2" type="DECIMAL" />
+    </table>
+
+    <table name="colissimo_home_delivery_area_freeshipping" namespace="ColissimoHomeDelivery\Model">
+        <column name="id" primaryKey="true" required="true" type="INTEGER" />
+        <column name="area_id" required="true" type="INTEGER" />
+        <column name="cart_amount" defaultValue="0.00" size="18" scale="2" type="DECIMAL" />
+        <foreign-key foreignTable="area" name="fk_colissimo_home_delivery_area_freeshipping_area_id" onDelete="RESTRICT" onUpdate="RESTRICT">
+            <reference foreign="id" local="area_id" />
+        </foreign-key>
+    </table>
+
+    <external-schema filename="local/config/schema.xml" referenceOnly="true" />
+</database>
