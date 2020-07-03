@@ -1,6 +1,6 @@
 # ColissimoHomeDelivery
 
-Adds a delivery system for Colissimo Domicile delivery, with or without signature. 
+Adds a delivery system for Colissimo Domicile delivery, with or without signature.    
 For pickup delivery look at this module https://github.com/thelia-modules/ColissimoPickupPoint
 
 ## Installation
