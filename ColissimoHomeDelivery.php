@@ -23,6 +23,7 @@ use Propel\Runtime\Propel;
 use Symfony\Component\Finder\Finder;
 use Thelia\Install\Database;
 use Thelia\Model\Country;
+use Thelia\Model\CountryArea;
 use Thelia\Model\Message;
 use Thelia\Model\MessageQuery;
 use Thelia\Model\ModuleQuery;
@@ -126,11 +127,11 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
     }
 
     /**
-     * Returns ids of area containing this country and covers by this module
+     * Returns ids of area containing this country and covered by this module
      * @param Country $country
      * @return array Area ids
      */
-    private function getAllAreasForCountry(Country $country)
+    public function getAllAreasForCountry(Country $country)
     {
         $areaArray = [];
 
@@ -163,55 +164,91 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
      */
     public static function getPostageAmount($areaId, $weight, $cartAmount = 0)
     {
-        $freeshippingFrom = ColissimoHomeDeliveryFreeshippingQuery::create()->findOneById(1)->getFreeshippingFrom();
-        $areaFreeshipping = ColissimoHomeDeliveryAreaFreeshippingQuery::create()->findOneByAreaId($areaId);
-
-        $areaPrices = ColissimoHomeDeliveryPriceSlicesQuery::create()
-            ->filterByAreaId($areaId)
-            ->filterByMaxWeight($weight, Criteria::GREATER_EQUAL)
-            ->_or()
-            ->filterByMaxWeight(null)
-            ->filterByMaxPrice($cartAmount, Criteria::GREATER_EQUAL)
-            ->_or()
-            ->filterByMaxPrice(null)
-            ->orderByMaxWeight()
-            ->orderByMaxPrice()
-        ;
-
-        /** @var ColissimoHomeDeliveryPriceSlices $firstPrice */
-        $firstPrice = $areaPrices->find()
-            ->getFirst();
-
-        if (null === $firstPrice) {
-            throw new DeliveryException("Colissimo delivery unavailable for your cart weight or delivery country");
+        /** Check if freeshipping is activated */
+        try {
+            $freeshipping = ColissimoHomeDeliveryFreeshippingQuery::create()
+                ->findPk(1)
+                ->getActive()
+            ;
+        } catch (\Exception $exception) {
+            $freeshipping = false;
         }
 
-        /** If a min price for freeshippingFrom is defined and the cart amount reaches this value, return 0 (aka free shipping) */
-        if (null !== $freeshippingFrom && $freeshippingFrom <= $cartAmount) {
-            $postage = 0;
-            return $postage;
+        /** Get the total cart price needed to have a free shipping for all areas, if it exists */
+        try {
+            $freeshippingFrom = ColissimoHomeDeliveryFreeshippingQuery::create()
+                ->findPk(1)
+                ->getFreeshippingFrom()
+            ;
+        } catch (\Exception $exception) {
+            $freeshippingFrom = false;
         }
 
-        /** If a min price for areaFreeshipping is defined and the cart amount reaches this value, return 0 (aka free shipping) */
-        if ($areaFreeshipping) {
-            if (null !== $areaFreeshipping->getCartAmount() && $areaFreeshipping->getCartAmount() <= $cartAmount) {
-                $postage = 0;
-                return $postage;
+        /** Set the initial postage price as 0 */
+        $postage = 0;
+
+        /** If free shipping is enabled, skip and return 0 */
+        if (!$freeshipping) {
+
+            /** If a min price for general freeshipping is defined and the cart reach this amount, return a postage of 0 */
+            if (null !== $freeshippingFrom && $freeshippingFrom <= $cartAmount) {
+                return 0;
             }
-        }
 
-        $postage = $firstPrice->getShipping();
+            $areaFreeshipping = ColissimoHomeDeliveryAreaFreeshippingQuery::create()
+                ->filterByAreaId($areaId)
+                ->findOne()
+            ;
+
+            if ($areaFreeshipping) {
+                $areaFreeshipping = $areaFreeshipping->getCartAmount();
+            }
+
+            /** If the cart price is superior to the minimum price for free shipping in the area of the order,
+             * return the postage as free.
+             */
+            if (null !== $areaFreeshipping && $areaFreeshipping <= $cartAmount) {
+                return 0;
+            }
+
+            /** Search the list of prices and order it in ascending order */
+            $areaPrices = ColissimoHomeDeliveryPriceSlicesQuery::create()
+                ->filterByAreaId($areaId)
+                ->filterByMaxWeight($weight, Criteria::GREATER_EQUAL)
+                ->_or()
+                ->filterByMaxWeight(null)
+                ->filterByMaxPrice($cartAmount, Criteria::GREATER_EQUAL)
+                ->_or()
+                ->filterByMaxPrice(null)
+                ->orderByMaxWeight()
+                ->orderByMaxPrice()
+            ;
+
+            /** Find the correct postage price for the cart weight and price according to the area and delivery mode in $areaPrices*/
+            $firstPrice = $areaPrices->find()
+                ->getFirst();
+
+            if (null === $firstPrice) {
+                return null;
+                //throw new DeliveryException("Colissimo delivery unavailable for your cart weight or delivery country");
+            }
+
+            $postage = $firstPrice->getShipping();
+        }
 
         return $postage;
     }
 
-    private function getMinPostage($areaIdArray, $cartWeight, $cartAmount)
+    public function getMinPostage($areaIdArray, $cartWeight, $cartAmount)
     {
         $minPostage = null;
 
         foreach ($areaIdArray as $areaId) {
             try {
                 $postage = self::getPostageAmount($areaId, $cartWeight, $cartAmount);
+                if (null === $postage) {
+                    continue ;
+                }
                 if ($minPostage === null || $postage < $minPostage) {
                     $minPostage = $postage;
                     if ($minPostage == 0) {
@@ -219,7 +256,12 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
                     }
                 }
             } catch (\Exception $ex) {
+                throw new DeliveryException($ex->getMessage()); //todo make a better catch
             }
+        }
+
+        if (null === $minPostage) {
+            throw new DeliveryException("Colissimo delivery unavailable for your cart weight or delivery country");
         }
 
         return $minPostage;
@@ -270,16 +312,32 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
      */
     public function isValidDelivery(Country $country)
     {
-        $areaId = $country->getAreaId();
+        if (empty($this->getAllAreasForCountry($country))) {
+            return false;
+        }
+
+        $countryAreas = $country->getCountryAreas();
+        $areasArray = [];
+
+        /** @var CountryArea $countryArea */
+        foreach ($countryAreas as $countryArea) {
+            $areasArray[] = $countryArea->getAreaId();
+        }
 
         $prices = ColissimoHomeDeliveryPriceSlicesQuery::create()
-            ->filterByAreaId($areaId)
+            ->filterByAreaId($areasArray)
             ->findOne();
 
-        /* check if Colissimo delivers the asked area*/
-        if (null !== $prices) {
+        $freeShipping = ColissimoHomeDeliveryFreeshippingQuery::create()
+            ->filterByActive(1)
+            ->findOne()
+        ;
+
+        /** Check if Colissimo delivers the asked area*/
+        if (null !== $prices || null !== $freeShipping) {
             return true;
         }
+
         return false;
     }
 
