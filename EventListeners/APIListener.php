@@ -17,6 +17,10 @@ class APIListener implements EventSubscriberInterface
 {
     public function getDeliveryModuleOptions(DeliveryModuleOptionEvent $deliveryModuleOptionEvent)
     {
+        if ($deliveryModuleOptionEvent->getModule()->getId() !== ColissimoHomeDelivery::getModuleId()) {
+            return ;
+        }
+
         $isValid = true;
         $postage = null;
         $postageTax = null;
@@ -71,7 +75,7 @@ class APIListener implements EventSubscriberInterface
 
         /** Check for old versions of Thelia where the events used by the API didn't exists */
         if (class_exists(DeliveryModuleOptionEvent::class)) {
-            $listenedEvents[OpenApiEvents::MODULE_DELIVERY_GET_OPTIONS] = array("getDeliveryModuleOptions", 128);
+            $listenedEvents[OpenApiEvents::MODULE_DELIVERY_GET_OPTIONS] = array("getDeliveryModuleOptions", 129);
         }
 
         return $listenedEvents;
