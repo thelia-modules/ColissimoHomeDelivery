@@ -1,14 +1,13 @@
 <?php
 
-
 namespace ColissimoHomeDelivery\EventListeners;
-
 
 use ColissimoHomeDelivery\ColissimoHomeDelivery;
 use OpenApi\Events\DeliveryModuleOptionEvent;
 use OpenApi\Events\OpenApiEvents;
 use OpenApi\Model\Api\DeliveryModuleOption;
 use OpenApi\Model\Api\ModelFactory;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Thelia\Core\Translation\Translator;
 use Thelia\Model\CountryArea;
@@ -16,11 +15,17 @@ use Thelia\Module\Exception\DeliveryException;
 
 class APIListener implements EventSubscriberInterface
 {
-    protected $modelFactory;
+    /** @var ContainerInterface  */
+    protected $container;
 
-    public function __construct(ModelFactory $modelFactory)
+    /**
+     * APIListener constructor.
+     * @param ContainerInterface $container We need the container because we use a service from another module
+     * which is not mandatory, and using its service without it being installed will crash
+     */
+    public function __construct(ContainerInterface $container)
     {
-        $this->modelFactory = $modelFactory;
+        $this->container = $container;
     }
 
     public function getDeliveryModuleOptions(DeliveryModuleOptionEvent $deliveryModuleOptionEvent)
@@ -64,7 +69,7 @@ class APIListener implements EventSubscriberInterface
         $maximumDeliveryDate = ''; // TODO (calculate delivery date from day of order
 
         /** @var DeliveryModuleOption $deliveryModuleOption */
-        $deliveryModuleOption = $this->modelFactory->buildModel('DeliveryModuleOption');
+        $deliveryModuleOption = ($this->container->get('open_api.model.factory'))->buildModel('DeliveryModuleOption');
         $deliveryModuleOption
             ->setCode('ColissimoHomeDelivery')
             ->setValid($isValid)
