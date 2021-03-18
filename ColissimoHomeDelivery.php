@@ -295,7 +295,11 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
                 throw new DeliveryException("Colissimo delivery unavailable for your cart weight or delivery country");
             }
         }
-
+		if($postage && $request->getSession()->getCurrency()->getRate()) $postage *= $request->getSession()->getCurrency()->getRate();
+		$currencyDecimals = array('JPY' => 0, 'TWD' => 0);
+        if ($request->getSession()->getCurrency()->getCode() && array_key_exists($request->getSession()->getCurrency()->getCode(), $currencyDecimals)) {
+			$postage = round($postage,0);
+		}
         return $postage;
     }
 
