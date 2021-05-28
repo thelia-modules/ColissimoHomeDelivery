@@ -53,7 +53,8 @@ class ShippingNotificationSender extends BaseAction implements EventSubscriberIn
      */
     public function sendShippingNotification(OrderEvent $event)
     {
-        if ($event->getOrder()->isSent()) {
+        $order = $event->getOrder();
+        if ($event->getOrder()->isSent() && $order->getDeliveryModuleId() == ColissimoHomeDelivery::getModuleId()) {
             $contact_email = ConfigQuery::getStoreEmail();
 
             if ($contact_email) {
