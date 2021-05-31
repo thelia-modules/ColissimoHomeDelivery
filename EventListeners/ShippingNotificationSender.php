@@ -16,6 +16,7 @@ namespace ColissimoHomeDelivery\EventListeners;
 
 use ColissimoHomeDelivery\ColissimoHomeDelivery;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Action\BaseAction;
 use Thelia\Core\Event\Order\OrderEvent;
 use Thelia\Core\Event\TheliaEvents;
@@ -35,11 +36,11 @@ class ShippingNotificationSender extends BaseAction implements EventSubscriberIn
     /** @var Request */
     protected $request;
 
-    public function __construct(ParserInterface $parser, MailerFactory $mailer, Request $request)
+    public function __construct(ParserInterface $parser, MailerFactory $mailer, RequestStack $requestStack)
     {
         $this->parser = $parser;
         $this->mailer = $mailer;
-        $this->request = $request;
+        $this->request = $requestStack->getCurrentRequest();
     }
 
     /**

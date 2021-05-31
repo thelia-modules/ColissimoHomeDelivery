@@ -19,7 +19,7 @@
         <service id="colissimo.homedelivery.notification_mail" class="ColissimoHomeDelivery\EventListeners\ShippingNotificationSender">
             <argument type="service" id="thelia.parser" />
             <argument type="service" id="mailer"/>
-            <argument type="service" id="request" />
+            <argument type="service" id="request_stack" />
             <tag name="kernel.event_subscriber"/>
         </service>
         <service id="api.colissimo.homedelivery" class="ColissimoHomeDelivery\EventListeners\APIListener" scope="request">
