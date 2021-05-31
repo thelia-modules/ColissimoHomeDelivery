@@ -16,12 +16,16 @@ namespace ColissimoHomeDelivery\EventListeners;
 
 use ColissimoHomeDelivery\ColissimoHomeDelivery;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Action\BaseAction;
 use Thelia\Core\Event\Order\OrderEvent;
 use Thelia\Core\Event\TheliaEvents;
+use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Template\ParserInterface;
 use Thelia\Mailer\MailerFactory;
 use Thelia\Model\ConfigQuery;
+use Thelia\Model\LangQuery;
+use Thelia\Model\MessageQuery;
 
 class ShippingNotificationSender extends BaseAction implements EventSubscriberInterface
 {
@@ -29,11 +33,14 @@ class ShippingNotificationSender extends BaseAction implements EventSubscriberIn
     protected $mailer;
     /** @var ParserInterface */
     protected $parser;
+    /** @var Request */
+    protected $request;
 
-    public function __construct(ParserInterface $parser, MailerFactory $mailer)
+    public function __construct(ParserInterface $parser, MailerFactory $mailer, RequestStack $requestStack)
     {
         $this->parser = $parser;
         $this->mailer = $mailer;
+        $this->request = $requestStack->getCurrentRequest();
     }
 
     /**
@@ -58,21 +65,50 @@ class ShippingNotificationSender extends BaseAction implements EventSubscriberIn
             $contact_email = ConfigQuery::getStoreEmail();
 
             if ($contact_email) {
+
+                $message = MessageQuery::create()
+                    ->filterByName(ColissimoHomeDelivery::CONFIRMATION_MESSAGE_NAME)
+                    ->findOne();
+
+                if (false === $message || null === $message) {
+                    throw new \Exception("Failed to load message ".ColissimoHomeDelivery::CONFIRMATION_MESSAGE_NAME.".");
+                }
+
                 $order = $event->getOrder();
                 $customer = $order->getCustomer();
 
-                $this->mailer->sendEmailToCustomer(
-                    ColissimoHomeDelivery::CONFIRMATION_MESSAGE_NAME,
-                    $order->getCustomer(),
-                    [
-                        'order_id' => $order->getId(),
-                        'order_ref' => $order->getRef(),
-                        'customer_id' => $customer->getId(),
-                        'order_date' => $order->getCreatedAt(),
-                        'update_date' => $order->getUpdatedAt(),
-                        'package' => $order->getDeliveryRef()
-                    ]
-                );
+                // Configured site URL
+                $urlSite =  ConfigQuery::read('url_site');
+
+                // for one domain by lang
+                if ((int) ConfigQuery::read('one_domain_foreach_lang', 0) === 1) {
+                    // We always query the DB here, as the Lang configuration (then the related URL) may change during the
+                    // user session lifetime, and improper URLs could be generated. This is quite odd, okay, but may happen.
+                    $urlSite = LangQuery::create()->findPk($this->request->getSession()->getLang()->getId())->getUrl();
+                }
+
+
+                $this->parser->assign('customer_id', $customer->getId());
+                $this->parser->assign('order_ref', $order->getRef());
+                $this->parser->assign('order_date', $order->getCreatedAt());
+                $this->parser->assign('update_date', $order->getUpdatedAt());
+                $this->parser->assign('package', $order->getDeliveryRef());
+                $this->parser->assign('store_name', ConfigQuery::read('store_name'));
+                $this->parser->assign('store_url', $urlSite);
+
+                $message
+                    ->setLocale($order->getLang()->getLocale());
+
+                $instance = \Swift_Message::newInstance()
+                    ->addTo($customer->getEmail(), $customer->getFirstname() . ' ' . $customer->getLastname())
+                    ->addFrom($contact_email, ConfigQuery::read('store_name'))
+                ;
+
+                // Build subject and body
+
+                $message->buildMessage($this->parser, $instance);
+
+                $this->mailer->send($instance);
             }
         }
     }
