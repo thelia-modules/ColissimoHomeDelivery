@@ -46,7 +46,7 @@ class LabelController extends BaseAdminController
         try {
             $pdfEvent = new PdfEvent($html);
 
-            $this->dispatch(TheliaEvents::GENERATE_PDF, $pdfEvent);
+            $this->dispatch($pdfEvent, TheliaEvents::GENERATE_PDF);
 
             $pdfFileName = self::LABEL_DIRECTORY . DS . $orderRef . '-customs-invoice.pdf';
 

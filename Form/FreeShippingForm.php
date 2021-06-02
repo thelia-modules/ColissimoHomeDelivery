@@ -80,9 +80,9 @@ class FreeShippingForm extends BaseForm
     /**
      * @return string the name of you form. This name must be unique
      */
-    public function getName()
+    public static function getName()
     {
-        return "colissimohomedeliveryfreeshipping";
+        return "colissimohomedelivery_freeshipping_form";
     }
 
 }

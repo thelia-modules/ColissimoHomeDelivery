@@ -45,7 +45,7 @@ class FreeShippingController extends BaseAdminController
             return $response;
         }
 
-        $form = new FreeShippingForm($this->getRequest());
+        $form = $this->createForm(FreeShippingForm::getName());
         $response = null;
 
         try {

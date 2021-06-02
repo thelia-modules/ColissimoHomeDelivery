@@ -16,6 +16,9 @@ namespace ColissimoHomeDelivery\Form;
 
 use ColissimoHomeDelivery\ColissimoHomeDelivery;
 use SimpleDhl\SimpleDhl;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Thelia\Form\BaseForm;
 
@@ -26,7 +29,7 @@ class ConfigurationForm extends BaseForm
         $this->formBuilder
             ->add(
                 ColissimoHomeDelivery::COLISSIMO_USERNAME,
-                'text',
+                TextType::class,
                 [
                     'constraints' => [
                         new NotBlank(),
@@ -43,7 +46,7 @@ class ConfigurationForm extends BaseForm
             )
             ->add(
                 ColissimoHomeDelivery::COLISSIMO_PASSWORD,
-                'text',
+                TextType::class,
                 [
                     'constraints' => [
                         new NotBlank(),
@@ -60,7 +63,7 @@ class ConfigurationForm extends BaseForm
             )
             ->add(
                 ColissimoHomeDelivery::AFFRANCHISSEMENT_ENDPOINT_URL,
-                'url',
+                UrlType::class,
                 [
                     'constraints' => [
                         new NotBlank(),
@@ -77,7 +80,7 @@ class ConfigurationForm extends BaseForm
             )
             ->add(
                 ColissimoHomeDelivery::ACTIVATE_DETAILED_DEBUG,
-                'checkbox',
+                CheckboxType::class,
                 [
                     'required' => false,
                     'label'       => $this->translator->trans('Activer les logs détaillés', [], ColissimoHomeDelivery::DOMAIN_NAME),
@@ -91,5 +94,13 @@ class ConfigurationForm extends BaseForm
                 ]
             )
         ;
+    }
+
+    /**
+    * @return string the name of you form. This name must be unique
+    */
+    public static function getName()
+    {
+        return "colissimohomedelivery_form_configuration_form";
     }
 }

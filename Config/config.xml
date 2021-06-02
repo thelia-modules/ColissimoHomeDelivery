@@ -11,8 +11,8 @@
     </loops>
 
     <forms>
-        <form name="colissimo.homedelivery.configuration.form" class="ColissimoHomeDelivery\Form\ConfigurationForm" />
-        <form name="colissimo.homedelivery.freeshipping.form" class="ColissimoHomeDelivery\Form\FreeShippingForm" />
+        <form name="colissimohomedelivery_form_configuration_form" class="ColissimoHomeDelivery\Form\ConfigurationForm" />
+        <form name="colissimohomedelivery_freeshipping_form" class="ColissimoHomeDelivery\Form\FreeShippingForm" />
     </forms>
 
     <services>

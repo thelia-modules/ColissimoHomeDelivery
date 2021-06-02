@@ -15,6 +15,7 @@
 namespace ColissimoHomeDelivery\Controller;
 
 use ColissimoHomeDelivery\ColissimoHomeDelivery;
+use ColissimoHomeDelivery\Form\ConfigurationForm;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
@@ -29,7 +30,7 @@ class ConfigurationController extends BaseAdminController
             return $response;
         }
 
-        $configurationForm = $this->createForm('colissimo.homedelivery.configuration.form');
+        $configurationForm = $this->createForm(ConfigurationForm::getName());
 
         $message = false;
 

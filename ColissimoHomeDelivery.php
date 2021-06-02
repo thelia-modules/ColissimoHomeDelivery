@@ -48,7 +48,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
      * @param ConnectionInterface|null $con
      * @throws \Propel\Runtime\Exception\PropelException
      */
-    public function postActivation(ConnectionInterface $con = null)
+    public function postActivation(ConnectionInterface $con = null): void
     {
         // Create table if required.
         try {
@@ -103,7 +103,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
     /**
      * @inheritDoc
      */
-    public function update($currentVersion, $newVersion, ConnectionInterface $con = null)
+    public function update($currentVersion, $newVersion, ConnectionInterface $con = null): void
     {
         $finder = (new Finder)
             ->files()

@@ -30,7 +30,7 @@
                             {intl l="Colissimo Web service configuration" d='colissimo.home.delivery.bo.default'}
                         </div>
 
-                        {form name="colissimo.homedelivery.configuration.form"}
+                        {form name="colissimohomedelivery_form_configuration_form"}
                         {if $form_error}<div class="alert alert-danger">{$form_error_message}</div>{/if}
 
                         <form action="{url path="/admin/module/ColissimoHomeDelivery/configure"}" method="post">
@@ -84,7 +84,7 @@
                     <div class="row">
                         <!-- checkbox free shipping -->
                         {assign var="isColissimoHomeDeliveryFreeshipping" value=0}
-                        {form  name="colissimo.homedelivery.freeshipping.form"}
+                        {form  name="colissimohomedelivery_freeshipping_form"}
                         <form action='{url path="/admin/module/ColissimoHomeDelivery/freeshipping"}' method="post" id="freeshippingform">
                             <div class="col-md-4">
                                 {form_hidden_fields form=$form}
