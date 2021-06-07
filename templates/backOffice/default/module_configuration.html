@@ -46,7 +46,7 @@
                             <div class="alert alert-danger">{$form_error_message}</div>
                             {/if}
 
-                            {if $smarty.get.success}
+                            {if $smarty.get.success|default:null}
                             <div class="alert alert-success">Les données de configuration ont été mises à jour.</div>
                             {/if}
 
@@ -150,7 +150,7 @@
                                                 <div class="input-group">
                                                     <span class="input-group-addon {if $area_id }alert-success{/if}">{intl l="Activate free shipping from (€) :" d="colissimo.home.delivery.bo.default"}</span>
                                                     <input type="hidden" name="area-id" value="{$area_id}">
-                                                    <input type="hidden" name="delivery-mode" value="{$deliveryModeId}">
+                                                    <input type="hidden" name="delivery-mode" value="{$deliveryModeId|default:null}">
 
                                                     {ifloop rel="area_freeshipping"}
                                                         {loop type="colissimo.homedelivery.area.freeshipping" name="area_freeshipping" area_id=$area_id}
