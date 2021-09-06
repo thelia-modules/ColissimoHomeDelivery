@@ -51,15 +51,13 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
     public function postActivation(ConnectionInterface $con = null): void
     {
         // Create table if required.
-        try {
-            ColissimoHomeDeliveryPriceSlicesQuery::create()->findOne();
-            ColissimoHomeDeliveryFreeshippingQuery::create()->findOne();
-            ColissimoHomeDeliveryAreaFreeshippingQuery::create()->findOne();
-        } catch (\Exception $ex) {
+        if (!self::getConfigValue('is_initialized', false)){
             $database = new Database($con->getWrappedConnection());
             $database->insertSql(null, [__DIR__ . "/Config/thelia.sql"]);
+            self::setConfigValue('is_initialized', true);
         }
 
+        //warning this part does not work with thelia 2.5
         if (!ColissimoHomeDeliveryFreeshippingQuery::create()->filterById(1)->findOne()) {
             ColissimoHomeDeliveryFreeshippingQuery::create()->filterById(1)->findOneOrCreate()->setActive(0)->save();
         }
@@ -284,7 +282,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
 
         if (false === $freeshippingIsActive){
             $cartWeight = $request->getSession()->getSessionCart($this->getDispatcher())->getWeight();
-            $cartAmount = $request->getSession()->getSessionCart($this->getDispatcher())->getTaxedAmount($country);
+            $cartAmount = $request->getSession()->getSessionCart($this->getDispatcher())->getTaxedAmount($country, false);
 
             $areaIdArray = $this->getAllAreasForCountry($country);
             if (empty($areaIdArray)) {
