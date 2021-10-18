@@ -1,25 +1,32 @@
 <?php
-/*************************************************************************************/
-/*      This file is part of the Thelia package.                                     */
-/*                                                                                   */
+
+/*
+ * This file is part of the Thelia package.
+ * http://www.thelia.net
+ *
+ * (c) OpenStudio <info@thelia.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 /*      Copyright (c) OpenStudio                                                     */
 /*      email : dev@thelia.net                                                       */
 /*      web : http://www.thelia.net                                                  */
-/*                                                                                   */
+
 /*      For the full copyright and license information, please view the LICENSE.txt  */
 /*      file that was distributed with this source code.                             */
-/*************************************************************************************/
 
 namespace ColissimoHomeDelivery;
 
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryAreaFreeshippingQuery;
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryFreeshippingQuery;
-use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryPriceSlices;
-use PDO;
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryPriceSlicesQuery;
+use PDO;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Propel;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\Finder\Finder;
 use Thelia\Install\Database;
 use Thelia\Model\Country;
@@ -27,10 +34,11 @@ use Thelia\Model\CountryArea;
 use Thelia\Model\Message;
 use Thelia\Model\MessageQuery;
 use Thelia\Model\ModuleQuery;
-use Thelia\Module\AbstractDeliveryModule;
+use Thelia\Model\State;
+use Thelia\Module\AbstractDeliveryModuleWithState;
 use Thelia\Module\Exception\DeliveryException;
 
-class ColissimoHomeDelivery extends AbstractDeliveryModule
+class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
 {
     /** @var string */
     const DOMAIN_NAME = 'colissimohomedelivery';
@@ -45,15 +53,14 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
     const ACTIVATE_DETAILED_DEBUG = 'activate_detailed_debug';
 
     /**
-     * @param ConnectionInterface|null $con
      * @throws \Propel\Runtime\Exception\PropelException
      */
     public function postActivation(ConnectionInterface $con = null): void
     {
         // Create table if required.
-        if (!self::getConfigValue('is_initialized', false)){
+        if (!self::getConfigValue('is_initialized', false)) {
             $database = new Database($con->getWrappedConnection());
-            $database->insertSql(null, [__DIR__ . "/Config/thelia.sql"]);
+            $database->insertSql(null, [__DIR__.'/Config/thelia.sql']);
             self::setConfigValue('is_initialized', true);
         }
 
@@ -99,15 +106,15 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function update($currentVersion, $newVersion, ConnectionInterface $con = null): void
     {
-        $finder = (new Finder)
+        $finder = (new Finder())
             ->files()
             ->name('#.*?\.sql#')
             ->sortByName()
-            ->in(__DIR__ . DS . 'Config' . DS . 'update');
+            ->in(__DIR__.DS.'Config'.DS.'update');
 
         $database = new Database($con);
 
@@ -117,7 +124,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
                 $database->insertSql(
                     null,
                     [
-                        $updateSQLFile->getPathname()
+                        $updateSQLFile->getPathname(),
                     ]
                 );
             }
@@ -125,8 +132,8 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
     }
 
     /**
-     * Returns ids of area containing this country and covered by this module
-     * @param Country $country
+     * Returns ids of area containing this country and covered by this module.
+     *
      * @return array Area ids
      */
     public function getAllAreasForCountry(Country $country)
@@ -158,11 +165,12 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
      * @param $deliverModeCode
      *
      * @return mixed
+     *
      * @throws DeliveryException
      */
     public static function getPostageAmount($areaId, $weight, $cartAmount = 0)
     {
-        /** Check if freeshipping is activated */
+        /* Check if freeshipping is activated */
         try {
             $freeshipping = ColissimoHomeDeliveryFreeshippingQuery::create()
                 ->findPk(1)
@@ -172,7 +180,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
             $freeshipping = false;
         }
 
-        /** Get the total cart price needed to have a free shipping for all areas, if it exists */
+        /* Get the total cart price needed to have a free shipping for all areas, if it exists */
         try {
             $freeshippingFrom = ColissimoHomeDeliveryFreeshippingQuery::create()
                 ->findPk(1)
@@ -185,10 +193,9 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
         /** Set the initial postage price as 0 */
         $postage = 0;
 
-        /** If free shipping is enabled, skip and return 0 */
+        /* If free shipping is enabled, skip and return 0 */
         if (!$freeshipping) {
-
-            /** If a min price for general freeshipping is defined and the cart reach this amount, return a postage of 0 */
+            /* If a min price for general freeshipping is defined and the cart reach this amount, return a postage of 0 */
             if (null !== $freeshippingFrom && $freeshippingFrom <= $cartAmount) {
                 return 0;
             }
@@ -202,7 +209,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
                 $areaFreeshipping = $areaFreeshipping->getCartAmount();
             }
 
-            /** If the cart price is superior to the minimum price for free shipping in the area of the order,
+            /* If the cart price is superior to the minimum price for free shipping in the area of the order,
              * return the postage as free.
              */
             if (null !== $areaFreeshipping && $areaFreeshipping <= $cartAmount) {
@@ -237,15 +244,20 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
         return $postage;
     }
 
-    public function getMinPostage($areaIdArray, $cartWeight, $cartAmount)
+    public function getMinPostage($country, $cartWeight, $cartAmount, $lang)
     {
         $minPostage = null;
+
+        $areaIdArray = $this->getAllAreasForCountry($country);
+        if (empty($areaIdArray)) {
+            throw new DeliveryException('Your delivery country is not covered by Colissimo.');
+        }
 
         foreach ($areaIdArray as $areaId) {
             try {
                 $postage = self::getPostageAmount($areaId, $cartWeight, $cartAmount);
                 if (null === $postage) {
-                    continue ;
+                    continue;
                 }
                 if ($minPostage === null || $postage < $minPostage) {
                     $minPostage = $postage;
@@ -259,56 +271,51 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
         }
 
         if (null === $minPostage) {
-            throw new DeliveryException("Colissimo delivery unavailable for your cart weight or delivery country");
+            throw new DeliveryException('Colissimo delivery unavailable for your cart weight or delivery country');
         }
 
-        return $minPostage;
+        return $this->buildOrderPostage($minPostage, $country, $lang);
     }
 
     /**
-     * Calculate and return delivery price
+     * Calculate and return delivery price.
      *
-     * @param  Country                          $country
      * @return mixed
+     *
      * @throws DeliveryException
      */
-    public function getPostage(Country $country)
+    public function getPostage(Country $country, State $state = null)
     {
         $request = $this->getRequest();
 
-        $postage = 0;
+        $orderPostage = 0;
 
         $freeshippingIsActive = ColissimoHomeDeliveryFreeshippingQuery::create()->findOneById(1)->getActive();
 
-        if (false === $freeshippingIsActive){
+        if (false === $freeshippingIsActive) {
             $cartWeight = $request->getSession()->getSessionCart($this->getDispatcher())->getWeight();
             $cartAmount = $request->getSession()->getSessionCart($this->getDispatcher())->getTaxedAmount($country, false);
 
-            $areaIdArray = $this->getAllAreasForCountry($country);
-            if (empty($areaIdArray)) {
-                throw new DeliveryException("Your delivery country is not covered by Colissimo.");
-            }
-
-            if (null === $postage = $this->getMinPostage($areaIdArray, $cartWeight, $cartAmount)) {
-                throw new DeliveryException("Colissimo delivery unavailable for your cart weight or delivery country");
+            if (null === $orderPostage = $this->getMinPostage($country, $cartWeight, $cartAmount, $request->getSession()->getLang()->getLocale())) {
+                throw new DeliveryException('Colissimo delivery unavailable for your cart weight or delivery country');
             }
         }
 
-        return $postage;
+        return $orderPostage;
     }
 
     /**
      * This method is called by the Delivery loop, to check if the current module has to be displayed to the customer.
-     * Override it to implements your delivery rules/
+     * Override it to implements your delivery rules/.
      *
      * If you return true, the delivery method will de displayed to the customer
      * If you return false, the delivery method will not be displayed
      *
-     * @param Country $country the country to deliver to.
+     * @param Country $country the country to deliver to
      *
-     * @return boolean
+     * @return bool
      */
-    public function isValidDelivery(Country $country)
+    public function isValidDelivery(Country $country, State $state = null)
     {
         if (empty($this->getAllAreasForCountry($country))) {
             return false;
@@ -331,7 +338,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
             ->findOne()
         ;
 
-        /** Check if Colissimo delivers the asked area*/
+        /* Check if Colissimo delivers the asked area*/
         if (null !== $prices || null !== $freeShipping) {
             return true;
         }
@@ -346,6 +353,14 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
 
     public function getDeliveryMode()
     {
-        return "delivery";
+        return 'delivery';
+    }
+
+    public static function configureServices(ServicesConfigurator $servicesConfigurator): void
+    {
+        $servicesConfigurator->load(self::getModuleCode().'\\', __DIR__)
+            ->exclude([THELIA_MODULE_DIR . ucfirst(self::getModuleCode()). "/I18n/*"])
+            ->autowire(true)
+            ->autoconfigure(true);
     }
 }

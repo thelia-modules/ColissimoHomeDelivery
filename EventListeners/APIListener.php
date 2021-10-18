@@ -9,6 +9,7 @@ use OpenApi\Model\Api\DeliveryModuleOption;
 use OpenApi\Model\Api\ModelFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\Translation\Translator;
 use Thelia\Model\CountryArea;
 use Thelia\Module\Exception\DeliveryException;
@@ -18,14 +19,19 @@ class APIListener implements EventSubscriberInterface
     /** @var ContainerInterface  */
     protected $container;
 
+
+    /** @var RequestStack  */
+    protected $requestStack;
+
     /**
      * APIListener constructor.
      * @param ContainerInterface $container We need the container because we use a service from another module
      * which is not mandatory, and using its service without it being installed will crash
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, RequestStack $requestStack)
     {
         $this->container = $container;
+        $this->requestStack = $requestStack;
     }
 
     public function getDeliveryModuleOptions(DeliveryModuleOptionEvent $deliveryModuleOptionEvent)
@@ -35,7 +41,7 @@ class APIListener implements EventSubscriberInterface
         }
 
         $isValid = true;
-        $postage = null;
+        $orderPostage = null;
         $postageTax = null;
 
         try {
@@ -54,13 +60,13 @@ class APIListener implements EventSubscriberInterface
                 $areasArray[] = $countryArea->getAreaId();
             }
 
-            $postage = $module->getMinPostage(
-                $areasArray,
+            $orderPostage = $module->getMinPostage(
+                $country,
                 $deliveryModuleOptionEvent->getCart()->getWeight(),
-                $deliveryModuleOptionEvent->getCart()->getTaxedAmount($country)
+                $deliveryModuleOptionEvent->getCart()->getTaxedAmount($country),
+                $this->requestStack->getCurrentRequest()->getSession()->getLang()->getLocale()
             );
 
-            $postageTax = 0; //TODO
         } catch (\Exception $exception) {
             $isValid = false;
         }
@@ -77,9 +83,9 @@ class APIListener implements EventSubscriberInterface
             ->setImage('')
             ->setMinimumDeliveryDate($minimumDeliveryDate)
             ->setMaximumDeliveryDate($maximumDeliveryDate)
-            ->setPostage($postage)
-            ->setPostageTax($postageTax)
-            ->setPostageUntaxed($postage - $postageTax)
+            ->setPostage($orderPostage->getAmount())
+            ->setPostageTax($orderPostage->getAmountTax())
+            ->setPostageUntaxed($orderPostage->getAmount() - $orderPostage->getAmountTax())
         ;
 
         $deliveryModuleOptionEvent->appendDeliveryModuleOptions($deliveryModuleOption);
