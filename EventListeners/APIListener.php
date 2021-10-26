@@ -83,9 +83,9 @@ class APIListener implements EventSubscriberInterface
             ->setImage('')
             ->setMinimumDeliveryDate($minimumDeliveryDate)
             ->setMaximumDeliveryDate($maximumDeliveryDate)
-            ->setPostage($orderPostage->getAmount())
-            ->setPostageTax($orderPostage->getAmountTax())
-            ->setPostageUntaxed($orderPostage->getAmount() - $orderPostage->getAmountTax())
+            ->setPostage(($orderPostage) ? $orderPostage->getAmount() : 0)
+            ->setPostageTax(($orderPostage) ? $orderPostage->getAmountTax() : 0)
+            ->setPostageUntaxed(($orderPostage) ? $orderPostage->getAmount() - $orderPostage->getAmountTax() : 0)
         ;
 
         $deliveryModuleOptionEvent->appendDeliveryModuleOptions($deliveryModuleOption);
