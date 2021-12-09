@@ -27,6 +27,7 @@ use Thelia\Model\CountryArea;
 use Thelia\Model\Message;
 use Thelia\Model\MessageQuery;
 use Thelia\Model\ModuleQuery;
+use Thelia\Model\Order;
 use Thelia\Module\AbstractDeliveryModule;
 use Thelia\Module\Exception\DeliveryException;
 
@@ -349,5 +350,10 @@ class ColissimoHomeDelivery extends AbstractDeliveryModule
     public function getDeliveryMode()
     {
         return "delivery";
+    }
+
+    public static function getTrackingLink(Order $order)
+    {
+        return "https://www.laposte.fr/outils/suivre-vos-envois?code=". $order->getDeliveryRef();
     }
 }
