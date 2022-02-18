@@ -17,7 +17,7 @@ CREATE TABLE `colissimo_home_delivery_price_slices`
     `max_price` FLOAT,
     `shipping` FLOAT NOT NULL,
     PRIMARY KEY (`id`),
-    INDEX `FI_colissimo_home_delivery_price_slices_area_id` (`area_id`),
+    INDEX `fi_colissimo_home_delivery_price_slices_area_id` (`area_id`),
     CONSTRAINT `fk_colissimo_home_delivery_price_slices_area_id`
         FOREIGN KEY (`area_id`)
         REFERENCES `area` (`id`)
@@ -33,7 +33,7 @@ DROP TABLE IF EXISTS `colissimo_home_delivery_freeshipping`;
 
 CREATE TABLE `colissimo_home_delivery_freeshipping`
 (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `active` TINYINT(1) DEFAULT 0,
     `freeshipping_from` DECIMAL(18,2),
     PRIMARY KEY (`id`)
@@ -47,11 +47,11 @@ DROP TABLE IF EXISTS `colissimo_home_delivery_area_freeshipping`;
 
 CREATE TABLE `colissimo_home_delivery_area_freeshipping`
 (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `area_id` INTEGER NOT NULL,
     `cart_amount` DECIMAL(18,2) DEFAULT 0.00,
     PRIMARY KEY (`id`),
-    INDEX `FI_colissimo_home_delivery_area_freeshipping_area_id` (`area_id`),
+    INDEX `fi_colissimo_home_delivery_area_freeshipping_area_id` (`area_id`),
     CONSTRAINT `fk_colissimo_home_delivery_area_freeshipping_area_id`
         FOREIGN KEY (`area_id`)
         REFERENCES `area` (`id`)

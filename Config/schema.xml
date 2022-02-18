@@ -16,13 +16,13 @@
     </table>
 
     <table name="colissimo_home_delivery_freeshipping" namespace="ColissimoHomeDelivery\Model">
-        <column name="id" primaryKey="true" required="true" type="INTEGER" />
+        <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER" />
         <column name="active" type="BOOLEAN" default="0"/>
         <column name="freeshipping_from" size="18" scale="2" type="DECIMAL" />
     </table>
 
     <table name="colissimo_home_delivery_area_freeshipping" namespace="ColissimoHomeDelivery\Model">
-        <column name="id" primaryKey="true" required="true" type="INTEGER" />
+        <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER" />
         <column name="area_id" required="true" type="INTEGER" />
         <column name="cart_amount" defaultValue="0.00" size="18" scale="2" type="DECIMAL" />
         <foreign-key foreignTable="area" name="fk_colissimo_home_delivery_area_freeshipping_area_id" onDelete="RESTRICT" onUpdate="RESTRICT">
