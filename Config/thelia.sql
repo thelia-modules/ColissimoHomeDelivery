@@ -33,7 +33,7 @@ DROP TABLE IF EXISTS `colissimo_home_delivery_freeshipping`;
 
 CREATE TABLE `colissimo_home_delivery_freeshipping`
 (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `active` TINYINT(1) DEFAULT 0,
     `freeshipping_from` DECIMAL(18,2),
     PRIMARY KEY (`id`)
@@ -47,7 +47,7 @@ DROP TABLE IF EXISTS `colissimo_home_delivery_area_freeshipping`;
 
 CREATE TABLE `colissimo_home_delivery_area_freeshipping`
 (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `area_id` INTEGER NOT NULL,
     `cart_amount` DECIMAL(18,2) DEFAULT 0.00,
     PRIMARY KEY (`id`),
