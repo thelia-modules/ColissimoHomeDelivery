@@ -64,11 +64,6 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
             self::setConfigValue('is_initialized', true);
         }
 
-        //warning this part does not work with thelia 2.5
-        if (!ColissimoHomeDeliveryFreeshippingQuery::create()->filterById(1)->findOne()) {
-            ColissimoHomeDeliveryFreeshippingQuery::create()->filterById(1)->findOneOrCreate()->setActive(0)->save();
-        }
-
         if (!self::getConfigValue(self::AFFRANCHISSEMENT_ENDPOINT_URL)) {
             self::setConfigValue(self::AFFRANCHISSEMENT_ENDPOINT_URL, 'https://ws.colissimo.fr/sls-ws/SlsServiceWS?wsdl');
         }
