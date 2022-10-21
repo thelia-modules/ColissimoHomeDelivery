@@ -12,6 +12,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\Translation\Translator;
 use Thelia\Model\CountryArea;
+use Thelia\Model\LangQuery;
+use Thelia\Model\ModuleQuery;
 use Thelia\Module\Exception\DeliveryException;
 
 class APIListener implements EventSubscriberInterface
@@ -43,6 +45,7 @@ class APIListener implements EventSubscriberInterface
         $isValid = true;
         $orderPostage = null;
         $postageTax = null;
+        $locale = $this->requestStack->getCurrentRequest()->getSession()->getLang()->getLocale();
 
         try {
             $module = new ColissimoHomeDelivery();
@@ -64,7 +67,7 @@ class APIListener implements EventSubscriberInterface
                 $country,
                 $deliveryModuleOptionEvent->getCart()->getWeight(),
                 $deliveryModuleOptionEvent->getCart()->getTaxedAmount($country),
-                $this->requestStack->getCurrentRequest()->getSession()->getLang()->getLocale()
+                $locale
             );
 
         } catch (\Exception $exception) {
@@ -79,7 +82,7 @@ class APIListener implements EventSubscriberInterface
         $deliveryModuleOption
             ->setCode('ColissimoHomeDelivery')
             ->setValid($isValid)
-            ->setTitle('Colissimo Home Delivery')
+            ->setTitle($deliveryModuleOptionEvent->getModule()->setLocale($locale)->getTitle())
             ->setImage('')
             ->setMinimumDeliveryDate($minimumDeliveryDate)
             ->setMaximumDeliveryDate($maximumDeliveryDate)

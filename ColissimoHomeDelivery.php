@@ -20,6 +20,7 @@
 namespace ColissimoHomeDelivery;
 
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryAreaFreeshippingQuery;
+use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryFreeshipping;
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryFreeshippingQuery;
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryPriceSlicesQuery;
 use PDO;
@@ -64,8 +65,10 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
             self::setConfigValue('is_initialized', true);
         }
 
-        if (!ColissimoHomeDeliveryFreeshippingQuery::create()->filterById(1)->findOne()) {
-            ColissimoHomeDeliveryFreeshippingQuery::create()->filterById(1)->findOneOrCreate()->setActive(0)->save();
+        if (!ColissimoHomeDeliveryFreeshippingQuery::create()->findOne()) {
+            (new ColissimoHomeDeliveryFreeshipping())
+                ->setActive(0)
+                ->save();
         }
 
         if (!self::getConfigValue(self::AFFRANCHISSEMENT_ENDPOINT_URL)) {
