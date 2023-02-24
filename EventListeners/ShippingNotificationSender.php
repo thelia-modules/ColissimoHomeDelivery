@@ -87,7 +87,6 @@ class ShippingNotificationSender extends BaseAction implements EventSubscriberIn
                     $urlSite = LangQuery::create()->findPk($this->request->getSession()->getLang()->getId())->getUrl();
                 }
 
-
                 $this->parser->assign('customer_id', $customer->getId());
                 $this->parser->assign('order_ref', $order->getRef());
                 $this->parser->assign('order_date', $order->getCreatedAt());
@@ -99,16 +98,7 @@ class ShippingNotificationSender extends BaseAction implements EventSubscriberIn
                 $message
                     ->setLocale($order->getLang()->getLocale());
 
-                $instance = \Swift_Message::newInstance()
-                    ->addTo($customer->getEmail(), $customer->getFirstname() . ' ' . $customer->getLastname())
-                    ->addFrom($contact_email, ConfigQuery::read('store_name'))
-                ;
-
-                // Build subject and body
-
-                $message->buildMessage($this->parser, $instance);
-
-                $this->mailer->send($instance);
+                $this->mailer->sendEmailToCustomer($message->getName(), $customer);
             }
         }
     }
