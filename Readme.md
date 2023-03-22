@@ -15,7 +15,7 @@ For pickup delivery look at this module https://github.com/thelia-modules/Coliss
 Add it in your main thelia composer.json file
 
 ```
-composer require thelia/colissimo-home-delivery-module:~1.0.0
+composer require thelia/colissimo-home-delivery-module:~2.0
 ```
 
 ## Usage

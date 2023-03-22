@@ -55,7 +55,17 @@
                                         <div class="row" style="margin-top: 20px;">
                                             <div class="col-md-6">
                                                 {render_form_field field="colissimo_home_delivery_username" value=$colissimo_home_delivery_username}
-                                                {render_form_field field="colissimo_home_delivery_password" value=$colissimo_home_delivery_password}
+                                                <div class="form-group">
+                                                    {form_field field="colissimo_home_delivery_password"}
+
+                                                        <label for="{$name}" class="control-label">{$label}<span class="required"> *</span></label>
+                                                        <input type="password" id="mdp" name="{$name}" class="form-control" value="{$data}" aria-describedby="pwdHelpBlock">
+                                                        <span class="help-block">{$label_attr.help}</span>
+                                                        <button type="button" class="eye btn btn-primary btn-responsive" style="color:#FFF;background-color:#f6993c" onclick="togglePwd('mdp');">
+                                                            <i class="glyphicon glyphicon-eye-open"></i>
+                                                        </button>
+                                                    {/form_field}
+                                                </div>
                                             </div>
 
                                             <div class="col-md-6">
@@ -282,3 +292,11 @@
         </div>
     </div>
 </div>
+
+<script>
+    function togglePwd(id)
+    {
+        var x = document.getElementById(id);
+        x.type = (x.type === "password")? "text" : "password";
+    }
+</script>
