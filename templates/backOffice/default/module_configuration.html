@@ -17,6 +17,7 @@
                     <ul id="tabbed-menu" class="nav nav-tabs">
                         <li class="{if $tab eq "prices-dom"}active{/if}"><a data-toggle="tab" href="#prices-dom">{intl l="Price slices (Dom)" d='colissimohomedelivery.bo.default'}</a> </li>
                         <li class="{if $tab eq "config"}active{/if}"><a data-toggle="tab" href="#config">{intl l="Configuration" d='colissimohomedelivery.bo.default'}</a> </li>
+                        <li class="{if $tab eq "tax_rule"}active{/if}"><a data-toggle="tab" href="#tax_rule">{intl l="Tax Rule" d='colissimohomedelivery.bo.default'}</a> </li>
                     </ul>
 
                     <div class="tab-content">
@@ -249,6 +250,25 @@
                                 {/elseloop}
                                 {/loop}
                             </div>
+                        </div>
+
+                        <div id="tax_rule" class="tab-pane {if $tab eq "tax_rule"}active{/if} form-container">
+                            <br>
+                            <div class="title">
+                                {intl l="Colissimo Tax Rule configuration" d='colissimohomedelivery.bo.default'}
+                            </div>
+
+                            {form name="colissimohomedelivery_form_tax_rule_form"}
+                            <form action="{url path="/admin/module/ColissimoHomeDelivery/tax_rule/save"}" method="post" >
+                                {form_hidden_fields}
+
+                                {render_form_field field='tax_rule_id'}
+
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="submit">{intl l="Save"}</button>
+                                </span>
+                            </form>
+                            {/form}
                         </div>
                         {include
                         file = "includes/generic-warning-dialog.html"
