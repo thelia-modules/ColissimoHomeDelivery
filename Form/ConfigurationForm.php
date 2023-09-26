@@ -17,6 +17,7 @@ namespace ColissimoHomeDelivery\Form;
 use ColissimoHomeDelivery\ColissimoHomeDelivery;
 use SimpleDhl\SimpleDhl;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -46,12 +47,13 @@ class ConfigurationForm extends BaseForm
             )
             ->add(
                 ColissimoHomeDelivery::COLISSIMO_PASSWORD,
-                TextType::class,
+                PasswordType::class,
                 [
                     'constraints' => [
                         new NotBlank(),
                     ],
                     'label'       => $this->translator->trans('Colissimo password', [], ColissimoHomeDelivery::DOMAIN_NAME),
+                    'data'        => ColissimoHomeDelivery::getConfigValue(ColissimoHomeDelivery::COLISSIMO_PASSWORD),
                     'label_attr'  => [
                         'help' => $this->translator->trans(
                             'Le mot de passe qui vous permet d’accéder à votre espace client à l\'adresse https://www.colissimo.fr/entreprise',

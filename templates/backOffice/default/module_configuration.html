@@ -15,8 +15,9 @@
             <div class="row">
                 <div class="col-md-12">
                     <ul id="tabbed-menu" class="nav nav-tabs">
-                        <li class="{if $tab eq "prices-dom"}active{/if}"><a data-toggle="tab" href="#prices-dom">{intl l="Price slices (Dom)" d='colissimo.home.delivery.bo.default'}</a> </li>
-                        <li class="{if $tab eq "config"}active{/if}"><a data-toggle="tab" href="#config">{intl l="Configuration" d='colissimo.home.delivery.bo.default'}</a> </li>
+                        <li class="{if $tab eq "prices-dom"}active{/if}"><a data-toggle="tab" href="#prices-dom">{intl l="Price slices (Dom)" d='colissimohomedelivery.bo.default'}</a> </li>
+                        <li class="{if $tab eq "config"}active{/if}"><a data-toggle="tab" href="#config">{intl l="Configuration" d='colissimohomedelivery.bo.default'}</a> </li>
+                        <li class="{if $tab eq "tax_rule"}active{/if}"><a data-toggle="tab" href="#tax_rule">{intl l="Tax Rule" d='colissimohomedelivery.bo.default'}</a> </li>
                     </ul>
 
                     <div class="tab-content">
@@ -24,7 +25,7 @@
                         <div id="config" class="tab-pane {if $tab eq "config"}active{/if} form-container">
                             <br>
                             <div class="title">
-                                {intl l="Colissimo Web service configuration" d='colissimo.home.delivery.bo.default'}
+                                {intl l="Colissimo Web service configuration" d='colissimohomedelivery.bo.default'}
                             </div>
 
                             {form name="colissimohomedelivery_form_configuration_form"}
@@ -49,13 +50,23 @@
 
                                 <div class="panel panel-default">
                                     <div class="panel-heading">
-                                        <div class="panel-title">{intl d='colissimo.home.delivery.bo.default' l="Configuration du service"}</div>
+                                        <div class="panel-title">{intl d='colissimohomedelivery.bo.default' l="Configuration du service"}</div>
                                     </div>
                                     <div class="panel-body">
                                         <div class="row" style="margin-top: 20px;">
                                             <div class="col-md-6">
                                                 {render_form_field field="colissimo_home_delivery_username" value=$colissimo_home_delivery_username}
-                                                {render_form_field field="colissimo_home_delivery_password" value=$colissimo_home_delivery_password}
+                                                <div class="form-group">
+                                                    {form_field field="colissimo_home_delivery_password"}
+
+                                                        <label for="{$name}" class="control-label">{$label}{if $required} <span class="required">*</span>{/if}</label>
+                                                        <input type="password" id="mdp" name="{$name}" class="form-control" value="{$data}" aria-describedby="pwdHelpBlock">
+                                                        <span class="help-block">{$label_attr.help}</span>
+                                                        <button type="button" class="eye btn btn-primary btn-responsive" style="color:#FFF;background-color:#f6993c" onclick="togglePwd('mdp');">
+                                                            <i class="glyphicon glyphicon-eye-open"></i>
+                                                        </button>
+                                                    {/form_field}
+                                                </div>
                                             </div>
 
                                             <div class="col-md-6">
@@ -72,7 +83,7 @@
                         <div id="prices-dom" class="tab-pane {if $tab eq "prices-dom"}active{/if} form-container">
                             <br>
                             <div class="title">
-                                {intl l="Price slices for domicile delivery" d='colissimo.home.delivery.bo.default'}
+                                {intl l="Price slices for domicile delivery" d='colissimohomedelivery.bo.default'}
                             </div>
 
                             <!-- ********* FREE SHIPPING BUTTON ********* -->
@@ -86,7 +97,7 @@
                                         {form_hidden_fields form=$form}
                                         {form_field form=$form field="freeshipping"}
                                         <label>
-                                            {intl l="Activate total free shipping " d="colissimo.home.delivery.bo.default"}
+                                            {intl l="Activate total free shipping " d="colissimohomedelivery.bo.default"}
                                         </label>
                                         <div class="switch-small freeshipping-activation-ColissimoHomeDelivery" data-on="success" data-off="danger" data-on-label="<i class='glyphicon glyphicon-ok-circle'></i>" data-off-label="<i class='glyphicon glyphicon-remove-circle'></i>">
                                             {loop type="colissimo.homedelivery.freeshipping" name="freeshipping_colissimo_home_delivery"}
@@ -99,7 +110,7 @@
                                         <div class="input-group">
                                             {form_field form=$form field="freeshipping_from"}
                                                 {loop type="colissimo.homedelivery.freeshipping" name="freeshipping_colissimo_home_delivery"}
-                                                    <span class="input-group-addon {if $FREESHIPPING_FROM}alert-success{/if}">{intl l="Or activate free shipping from (€) :" d="colissimo.home.delivery.bo.default"}</span>
+                                                    <span class="input-group-addon {if $FREESHIPPING_FROM}alert-success{/if}">{intl l="Or activate free shipping from (€) :" d="colissimohomedelivery.bo.default"}</span>
                                                     <input type="number" name="{$name}"  class="form-control" value="{$value}" step="0.01">
                                                 {/loop}
                                             {/form_field}
@@ -117,12 +128,12 @@
                             <!-- **************************************** -->
 
                             <div class="alert alert-info">
-                                {intl l="You can create price slices by specifying a maximum cart weight and/or a maximum cart price." d='colissimo.home.delivery.bo.default'}
-                                {intl l="The slices are ordered by maximum cart weight then by maximum cart price." d='colissimo.home.delivery.bo.default'}
-                                {intl l="If a cart matches multiple slices, it will take the last slice following that order." d='colissimo.home.delivery.bo.default'}
-                                {intl l="If you don't specify a cart weight in a slice, it will have priority over the slices with weight." d='colissimo.home.delivery.bo.default'}
-                                {intl l="If you don't specify a cart price in a slice, it will have priority over the other slices with the same weight." d='colissimo.home.delivery.bo.default'}
-                                {intl l="If you specify both, the cart will require to have a lower weight AND a lower price in order to match the slice." d='colissimo.home.delivery.bo.default'}
+                                {intl l="You can create price slices by specifying a maximum cart weight and/or a maximum cart price." d='colissimohomedelivery.bo.default'}
+                                {intl l="The slices are ordered by maximum cart weight then by maximum cart price." d='colissimohomedelivery.bo.default'}
+                                {intl l="If a cart matches multiple slices, it will take the last slice following that order." d='colissimohomedelivery.bo.default'}
+                                {intl l="If you don't specify a cart weight in a slice, it will have priority over the slices with weight." d='colissimohomedelivery.bo.default'}
+                                {intl l="If you don't specify a cart price in a slice, it will have priority over the other slices with the same weight." d='colissimohomedelivery.bo.default'}
+                                {intl l="If you specify both, the cart will require to have a lower weight AND a lower price in order to match the slice." d='colissimohomedelivery.bo.default'}
                             </div>
 
                             <div class="slices form-container">
@@ -136,7 +147,7 @@
                                             <tr>
                                                 <th>
                                                     <label class="clearfix">
-                                                        <small>{intl d='colissimo.home.delivery.bo.default' l="Area : "}</small> {$NAME}
+                                                        <small>{intl d='colissimohomedelivery.bo.default' l="Area : "}</small> {$NAME}
                                                     </label>
                                                 </th>
 
@@ -144,7 +155,7 @@
                                                     <div id="area-freeshipping-{$area_id}" {if $isColissimoHomeDeliveryFreeshipping eq 1}  style="display:none;" {/if}>
                                                     <form action="{url path="/admin/module/ColissimoHomeDelivery/area_freeshipping"}"  method="post">
                                                         <div class="input-group">
-                                                            <span class="input-group-addon {if $area_id }alert-success{/if}">{intl l="Activate free shipping from (€) :" d="colissimo.home.delivery.bo.default"}</span>
+                                                            <span class="input-group-addon {if $area_id }alert-success{/if}">{intl l="Activate free shipping from (€) :" d="colissimohomedelivery.bo.default"}</span>
                                                             <input type="hidden" name="area-id" value="{$area_id}">
                                                             <input type="hidden" name="delivery-mode" value="{$deliveryModeId|default:null}">
 
@@ -168,10 +179,10 @@
                                             </thead>
                                             <thead>
                                             <tr>
-                                                <th class="col-md-3">{intl l="Weight up to ... kg" d='colissimo.home.delivery.bo.default'}</th>
-                                                <th class="col-md-3">{intl l="Untaxed Price up to ... ($)" d='colissimo.home.delivery.bo.default'}</th>
-                                                <th class="col-md-5">{intl l="Shipping Price ($)" d='colissimo.home.delivery.bo.default'}</th>
-                                                <th class="col-md-1">{intl l="Actions" d='colissimo.home.delivery.bo.default'}</th>
+                                                <th class="col-md-3">{intl l="Weight up to ... kg" d='colissimohomedelivery.bo.default'}</th>
+                                                <th class="col-md-3">{intl l="Untaxed Price up to ... ($)" d='colissimohomedelivery.bo.default'}</th>
+                                                <th class="col-md-5">{intl l="Shipping Price ($)" d='colissimohomedelivery.bo.default'}</th>
+                                                <th class="col-md-1">{intl l="Actions" d='colissimohomedelivery.bo.default'}</th>
                                             </tr>
                                             </thead>
                                             <tbody>
@@ -189,12 +200,12 @@
                                                 <th class="col-md-1">
                                                     <div class="btn-group">
                                                         {loop type="auth" name="can_change" role="ADMIN" module="customdelivery" access="UPDATE"}
-                                                        <a class="btn btn-default btn-xs js-slice-save" title="{intl d='colissimo.home.delivery.bo.default' l='Save this price slice'}">
+                                                        <a class="btn btn-default btn-xs js-slice-save" title="{intl d='colissimohomedelivery.bo.default' l='Save this price slice'}">
                                                             <span class="glyphicon glyphicon-floppy-disk"></span>
                                                         </a>
                                                         {/loop}
                                                         {loop type="auth" name="can_change" role="ADMIN" module="customdelivery" access="DELETE"}
-                                                        <a class="btn btn-default btn-xs js-slice-delete" title="{intl d='colissimo.home.delivery.bo.default' l='Delete this price slice'}" data-id="{$ID}">
+                                                        <a class="btn btn-default btn-xs js-slice-delete" title="{intl d='colissimohomedelivery.bo.default' l='Delete this price slice'}" data-id="{$ID}">
                                                             <span class="glyphicon glyphicon-trash"></span>
                                                         </a>
                                                         {/loop}
@@ -216,7 +227,7 @@
                                                     <input type="text" data-field="shipping" class="form-control js-slice-shipping" value="" />
                                                 </th>
                                                 <th class="col-md-1">
-                                                    <a class="btn btn-default btn-xs js-slice-add" title="{intl d='colissimo.home.delivery.bo.default' l='Add this price slice'}" >
+                                                    <a class="btn btn-default btn-xs js-slice-add" title="{intl d='colissimohomedelivery.bo.default' l='Add this price slice'}" >
                                                         <span class="glyphicon glyphicon-plus"></span>
                                                     </a>
                                                 </th>
@@ -230,9 +241,9 @@
                                 {elseloop rel="area_loop"}
                                 <div class="col-md-12">
                                     <div class="alert alert-warning">
-                                        {intl d='colissimo.home.delivery.bo.default' l="You should first attribute shipping zones to the modules: "}
+                                        {intl d='colissimohomedelivery.bo.default' l="You should first attribute shipping zones to the modules: "}
                                         <a href="{url path="/admin/configuration/shipping_zones/update/$ID"}">
-                                            {intl d='colissimo.home.delivery.bo.default' l="manage shipping zones"}
+                                            {intl d='colissimohomedelivery.bo.default' l="manage shipping zones"}
                                         </a>
                                     </div>
                                 </div>
@@ -240,11 +251,30 @@
                                 {/loop}
                             </div>
                         </div>
+
+                        <div id="tax_rule" class="tab-pane {if $tab eq "tax_rule"}active{/if} form-container">
+                            <br>
+                            <div class="title">
+                                {intl l="Colissimo Tax Rule configuration" d='colissimohomedelivery.bo.default'}
+                            </div>
+
+                            {form name="colissimohomedelivery_form_tax_rule_form"}
+                            <form action="{url path="/admin/module/ColissimoHomeDelivery/tax_rule/save"}" method="post" >
+                                {form_hidden_fields}
+
+                                {render_form_field field='tax_rule_id'}
+
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="submit">{intl l="Save"}</button>
+                                </span>
+                            </form>
+                            {/form}
+                        </div>
                         {include
                         file = "includes/generic-warning-dialog.html"
 
                         dialog_id       = "colissimo_home_delivery_dialog"
-                        dialog_title    = {intl d='colissimo.home.delivery.bo.default' l="Message"}
+                        dialog_title    = {intl d='colissimohomedelivery.bo.default' l="Message"}
                         dialog_body     = ""
                         }
                     </div>
@@ -266,12 +296,12 @@
                     <th class="col-md-1">
                         <div class="btn-group">
                             {loop type="auth" name="can_change" role="ADMIN" module="colissimohomedelivery" access="UPDATE"}
-                            <a class="btn btn-default btn-xs js-slice-save" title="{intl d='colissimo.home.delivery.bo.default' l='Save this price slice'}">
+                            <a class="btn btn-default btn-xs js-slice-save" title="{intl d='colissimohomedelivery.bo.default' l='Save this price slice'}">
                                 <span class="glyphicon glyphicon-floppy-disk"></span>
                             </a>
                             {/loop}
                             {loop type="auth" name="can_change" role="ADMIN" module="colissimohomedelivery" access="DELETE"}
-                            <a class="btn btn-default btn-xs js-slice-delete" title="{intl d='colissimo.home.delivery.bo.default' l='Delete this price slice'}" data-id="<%=id %>">
+                            <a class="btn btn-default btn-xs js-slice-delete" title="{intl d='colissimohomedelivery.bo.default' l='Delete this price slice'}" data-id="<%=id %>">
                                 <span class="glyphicon glyphicon-trash"></span>
                             </a>
                             {/loop}
@@ -282,3 +312,11 @@
         </div>
     </div>
 </div>
+
+<script>
+    function togglePwd(id)
+    {
+        var x = document.getElementById(id);
+        x.type = (x.type === "password")? "text" : "password";
+    }
+</script>

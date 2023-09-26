@@ -52,6 +52,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
     const COLISSIMO_PASSWORD = 'colissimo_home_delivery_password';
     const AFFRANCHISSEMENT_ENDPOINT_URL = 'affranchissement_endpoint_url';
     const ACTIVATE_DETAILED_DEBUG = 'activate_detailed_debug';
+    const COLISSIMO_TAX_RULE_ID = 'colissimo_home_delivery_tax_rule_id';
 
     /**
      * @throws \Propel\Runtime\Exception\PropelException
@@ -85,6 +86,10 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
 
         if (!self::getConfigValue(self::ACTIVATE_DETAILED_DEBUG)) {
             self::setConfigValue(self::ACTIVATE_DETAILED_DEBUG, '0');
+        }
+
+        if (!self::getConfigValue(self::COLISSIMO_TAX_RULE_ID)) {
+            self::setConfigValue(self::COLISSIMO_TAX_RULE_ID, null);
         }
 
         if (null === MessageQuery::create()->findOneByName(self::CONFIRMATION_MESSAGE_NAME)) {
@@ -276,7 +281,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
             throw new DeliveryException('Colissimo delivery unavailable for your cart weight or delivery country');
         }
 
-        return $this->buildOrderPostage($minPostage, $country, $lang);
+        return $this->buildOrderPostage($minPostage, $country, $lang, self::getConfigValue(self::COLISSIMO_TAX_RULE_ID));
     }
 
     /**
