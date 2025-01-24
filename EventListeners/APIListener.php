@@ -1,84 +1,74 @@
 <?php
 
+/*
+ * This file is part of the Thelia package.
+ * http://www.thelia.net
+ *
+ * (c) OpenStudio <info@thelia.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace ColissimoHomeDelivery\EventListeners;
 
 use ColissimoHomeDelivery\ColissimoHomeDelivery;
-use OpenApi\Events\DeliveryModuleOptionEvent;
-use OpenApi\Events\OpenApiEvents;
-use OpenApi\Model\Api\DeliveryModuleOption;
-use OpenApi\Model\Api\ModelFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Thelia\Api\Bridge\Propel\Event\DeliveryModuleOptionEvent;
+use Thelia\Api\Resource\DeliveryModuleOption;
+use Thelia\Core\Event\TheliaEvents;
+use Thelia\Core\HttpFoundation\Session\Session;
 use Thelia\Core\Translation\Translator;
 use Thelia\Model\CountryArea;
-use Thelia\Model\LangQuery;
-use Thelia\Model\ModuleQuery;
 use Thelia\Module\Exception\DeliveryException;
 
 class APIListener implements EventSubscriberInterface
 {
-    /** @var ContainerInterface  */
-    protected $container;
-
-
-    /** @var RequestStack  */
-    protected $requestStack;
-
     /**
-     * APIListener constructor.
      * @param ContainerInterface $container We need the container because we use a service from another module
-     * which is not mandatory, and using its service without it being installed will crash
+     *                                      which is not mandatory, and using its service without it being installed will crash
      */
-    public function __construct(ContainerInterface $container, RequestStack $requestStack)
-    {
-        $this->container = $container;
-        $this->requestStack = $requestStack;
+    public function __construct(
+        protected ContainerInterface $container,
+        protected Session $session
+    ) {
     }
 
-    public function getDeliveryModuleOptions(DeliveryModuleOptionEvent $deliveryModuleOptionEvent)
+    public function getDeliveryModuleOptions(DeliveryModuleOptionEvent $deliveryModuleOptionEvent): void
     {
         if ($deliveryModuleOptionEvent->getModule()->getId() !== ColissimoHomeDelivery::getModuleId()) {
-            return ;
+            return;
         }
-
         $isValid = true;
         $orderPostage = null;
-        $postageTax = null;
-        $locale = $this->requestStack->getCurrentRequest()->getSession()->getLang()->getLocale();
+        $locale = $this->session->getLang()->getLocale();
 
         try {
             $module = new ColissimoHomeDelivery();
             $country = $deliveryModuleOptionEvent->getCountry();
 
-            if (empty($module->getAllAreasForCountry($country))) {
-                throw new DeliveryException(Translator::getInstance()->trans("Your delivery country is not covered by Colissimo"));
+            if (!$country || empty($module->getAllAreasForCountry($country))) {
+                throw new DeliveryException(Translator::getInstance()->trans('Your delivery country is not covered by Colissimo'));
             }
-
-            $countryAreas = $country->getCountryAreas();
-            $areasArray = [];
-
-            /** @var CountryArea $countryArea */
-            foreach ($countryAreas as $countryArea) {
-                $areasArray[] = $countryArea->getAreaId();
+            $cart = $deliveryModuleOptionEvent->getCart();
+            if (null === $cart) {
+                throw new DeliveryException(Translator::getInstance()->trans('No cart found'));
             }
-
             $orderPostage = $module->getMinPostage(
                 $country,
-                $deliveryModuleOptionEvent->getCart()->getWeight(),
-                $deliveryModuleOptionEvent->getCart()->getTaxedAmount($country),
+                $cart->getWeight(),
+                $cart->getTaxedAmount($country),
                 $locale
             );
-
-        } catch (\Exception $exception) {
+        } catch (\Exception) {
             $isValid = false;
         }
 
         $minimumDeliveryDate = ''; // TODO (calculate delivery date from day of order)
         $maximumDeliveryDate = ''; // TODO (calculate delivery date from day of order
 
-        /** @var DeliveryModuleOption $deliveryModuleOption */
-        $deliveryModuleOption = ($this->container->get('open_api.model.factory'))->buildModel('DeliveryModuleOption');
+        $deliveryModuleOption = new DeliveryModuleOption();
         $deliveryModuleOption
             ->setCode('ColissimoHomeDelivery')
             ->setValid($isValid)
@@ -94,13 +84,13 @@ class APIListener implements EventSubscriberInterface
         $deliveryModuleOptionEvent->appendDeliveryModuleOptions($deliveryModuleOption);
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         $listenedEvents = [];
 
-        /** Check for old versions of Thelia where the events used by the API didn't exists */
+        /* Check for old versions of Thelia where the events used by the API didn't exists */
         if (class_exists(DeliveryModuleOptionEvent::class)) {
-            $listenedEvents[OpenApiEvents::MODULE_DELIVERY_GET_OPTIONS] = array("getDeliveryModuleOptions", 129);
+            $listenedEvents[TheliaEvents::MODULE_DELIVERY_GET_OPTIONS] = ['getDeliveryModuleOptions', 129];
         }
 
         return $listenedEvents;
