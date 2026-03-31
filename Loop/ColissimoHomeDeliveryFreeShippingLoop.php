@@ -4,6 +4,7 @@ namespace ColissimoHomeDelivery\Loop;
 
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryFreeshipping;
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryFreeshippingQuery;
+use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Thelia\Core\Template\Element\BaseLoop;
 use Thelia\Core\Template\Element\LoopResult;
 use Thelia\Core\Template\Element\LoopResultRow;
@@ -16,14 +17,14 @@ class ColissimoHomeDeliveryFreeShippingLoop extends BaseLoop implements PropelSe
     /**
      * @return ArgumentCollection
      */
-    protected function getArgDefinitions()
+    protected function getArgDefinitions(): ArgumentCollection
     {
         return new ArgumentCollection(
             Argument::createIntTypeArgument('id')
         );
     }
 
-    public function buildModelCriteria()
+    public function buildModelCriteria(): ModelCriteria
     {
         if (null === $isFreeShippingActive = ColissimoHomeDeliveryFreeshippingQuery::create()->findOneById(1)){
             $isFreeShippingActive = new ColissimoHomeDeliveryFreeshipping();
@@ -35,7 +36,7 @@ class ColissimoHomeDeliveryFreeShippingLoop extends BaseLoop implements PropelSe
         return ColissimoHomeDeliveryFreeshippingQuery::create()->filterById(1);
     }
 
-    public function parseResults(LoopResult $loopResult)
+    public function parseResults(LoopResult $loopResult): LoopResult
     {
         /** @var ColissimoHomeDeliveryFreeshipping $freeshipping */
         foreach ($loopResult->getResultDataCollection() as $freeshipping) {

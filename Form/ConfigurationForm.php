@@ -25,7 +25,7 @@ use Thelia\Form\BaseForm;
 
 class ConfigurationForm extends BaseForm
 {
-    protected function buildForm()
+    protected function buildForm(): void
     {
         $this->formBuilder
             ->add(
@@ -101,7 +101,7 @@ class ConfigurationForm extends BaseForm
     /**
     * @return string the name of you form. This name must be unique
     */
-    public static function getName()
+    public static function getName(): string
     {
         return "colissimohomedelivery_form_configuration_form";
     }

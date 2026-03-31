@@ -18,14 +18,14 @@ class ColissimoHomeDeliveryAreaFreeShippingLoop extends BaseLoop implements Prop
     /**
      * @return ArgumentCollection
      */
-    protected function getArgDefinitions()
+    protected function getArgDefinitions(): ArgumentCollection
     {
         return new ArgumentCollection(
             Argument::createIntTypeArgument('area_id')
         );
     }
 
-    public function buildModelCriteria()
+    public function buildModelCriteria(): ColissimoHomeDeliveryAreaFreeshippingQuery
     {
         $areaId = $this->getAreaId();
 
@@ -38,7 +38,7 @@ class ColissimoHomeDeliveryAreaFreeShippingLoop extends BaseLoop implements Prop
         return $search;
     }
 
-    public function parseResults(LoopResult $loopResult)
+    public function parseResults(LoopResult $loopResult): LoopResult
     {
         /** @var ColissimoHomeDeliveryAreaFreeshipping $mode */
         foreach ($loopResult->getResultDataCollection() as $mode) {

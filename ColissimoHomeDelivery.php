@@ -29,12 +29,13 @@ use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Propel;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\Finder\Finder;
-use Thelia\Install\Database;
+use Thelia\Core\Install\Database;
 use Thelia\Model\Country;
 use Thelia\Model\CountryArea;
 use Thelia\Model\Message;
 use Thelia\Model\MessageQuery;
 use Thelia\Model\ModuleQuery;
+use Thelia\Model\OrderPostage;
 use Thelia\Model\State;
 use Thelia\Module\AbstractDeliveryModuleWithState;
 use Thelia\Module\Exception\DeliveryException;
@@ -291,7 +292,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
      *
      * @throws DeliveryException
      */
-    public function getPostage(Country $country, State $state = null)
+    public function getPostage(Country $country, State $state = null): OrderPostage|float
     {
         $request = $this->getRequest();
 
@@ -322,7 +323,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
      *
      * @return bool
      */
-    public function isValidDelivery(Country $country, State $state = null)
+    public function isValidDelivery(Country $country, State $state = null): bool
     {
         if (empty($this->getAllAreasForCountry($country))) {
             return false;
