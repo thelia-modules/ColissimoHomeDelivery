@@ -47,7 +47,7 @@ class ShippingNotificationSender extends BaseAction implements EventSubscriberIn
      *
      * @inheritdoc
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             TheliaEvents::ORDER_UPDATE_STATUS => ['sendShippingNotification', 128]

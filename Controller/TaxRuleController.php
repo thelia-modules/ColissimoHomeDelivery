@@ -5,7 +5,7 @@ namespace ColissimoHomeDelivery\Controller;
 use ColissimoHomeDelivery\ColissimoHomeDelivery;
 use ColissimoHomeDelivery\Form\ConfigurationForm;
 use ColissimoHomeDelivery\Form\TaxRuleForm;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
