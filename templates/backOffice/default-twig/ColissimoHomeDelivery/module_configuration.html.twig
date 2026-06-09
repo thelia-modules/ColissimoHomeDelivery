@@ -1,0 +1,215 @@
+{# Colissimo Home Delivery - module configuration (default-twig BO) #}
+{% set tab = app.request.query.get('tab')|default('prices-dom') %}
+
+<style>
+    input[type=number] { min-width: 100px; }
+</style>
+
+<div class="card">
+    <div class="card-body">
+        <ul id="tabbed-menu" class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link {{ tab == 'prices-dom' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#prices-dom" href="#prices-dom">{{ 'Price slices (Dom)'|trans({}, 'colissimohomedelivery.bo.default') }}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ tab == 'config' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#config" href="#config">{{ 'Configuration'|trans({}, 'colissimohomedelivery.bo.default') }}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ tab == 'tax_rule' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#tax_rule" href="#tax_rule">{{ 'Tax Rule'|trans({}, 'colissimohomedelivery.bo.default') }}</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            {# ===================== CONFIG TAB ===================== #}
+            <div id="config" class="tab-pane fade {{ tab == 'config' ? 'show active' }}">
+                <h4 class="mb-3">{{ 'Colissimo Web service configuration'|trans({}, 'colissimohomedelivery.bo.default') }}</h4>
+
+                {% if app.request.query.get('success') is defined and app.request.query.get('success') %}
+                    <div class="alert alert-success">{{ 'The configuration has been updated.'|trans({}, 'colissimohomedelivery.bo.default') }}</div>
+                {% endif %}
+
+                {{ form_start(configuration_form, {'action': path('colissimo.home.delivery.config'), 'method': 'post', 'attr': {'class': 'colissimo-config-form'}}) }}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <span class="card-title">{{ 'Service configuration'|trans({}, 'colissimohomedelivery.bo.default') }}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(configuration_form.colissimo_home_delivery_username) }}
+                                        {{ form_widget(configuration_form.colissimo_home_delivery_username) }}
+                                        {{ form_errors(configuration_form.colissimo_home_delivery_username) }}
+                                        <span class="form-text">{{ configuration_form.colissimo_home_delivery_username.vars.label_attr.help|default('') }}</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(configuration_form.colissimo_home_delivery_password) }}
+                                        <div class="input-group">
+                                            {{ form_widget(configuration_form.colissimo_home_delivery_password, {'attr': {'id': 'colissimo-pwd'}}) }}
+                                            <button type="button" class="btn btn-secondary" data-action="toggle-password" data-target="colissimo-pwd">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        {{ form_errors(configuration_form.colissimo_home_delivery_password) }}
+                                        <span class="form-text">{{ configuration_form.colissimo_home_delivery_password.vars.label_attr.help|default('') }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(configuration_form.affranchissement_endpoint_url) }}
+                                        {{ form_widget(configuration_form.affranchissement_endpoint_url) }}
+                                        {{ form_errors(configuration_form.affranchissement_endpoint_url) }}
+                                        <span class="form-text">{{ configuration_form.affranchissement_endpoint_url.vars.label_attr.help|default('') }}</span>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        {{ form_widget(configuration_form.activate_detailed_debug) }}
+                                        {{ form_label(configuration_form.activate_detailed_debug) }}
+                                        {{ form_errors(configuration_form.activate_detailed_debug) }}
+                                        <span class="form-text d-block">{{ configuration_form.activate_detailed_debug.vars.label_attr.help|default('') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>{{ 'Save'|trans }}</button>
+                        </div>
+                    </div>
+                {{ form_end(configuration_form) }}
+            </div>
+
+            {# ===================== PRICES TAB ===================== #}
+            <div id="prices-dom" class="tab-pane fade {{ tab == 'prices-dom' ? 'show active' }}">
+                <h4 class="mb-3">{{ 'Price slices for domicile delivery'|trans({}, 'colissimohomedelivery.bo.default') }}</h4>
+
+                {# ---- Total free shipping ---- #}
+                {{ form_start(freeshipping_form, {'action': path('colissimo.home.delivery.toggle.freeshipping'), 'method': 'post', 'attr': {'id': 'freeshippingform'}}) }}
+                    <div class="row align-items-center mb-3">
+                        <div class="col-md-4">
+                            <label class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="freeshipping-toggle" name="{{ freeshipping_form.freeshipping.vars.full_name }}" value="1" {{ freeshipping.active ? 'checked' }}>
+                                <span class="form-check-label">{{ 'Activate total free shipping'|trans({}, 'colissimohomedelivery.bo.default') }}</span>
+                            </label>
+                            {% do freeshipping_form.freeshipping.setRendered %}
+                        </div>
+                        <div class="col-md-6" id="freeshipping-from" {{ freeshipping.active ? 'style="display:none;"' }}>
+                            <div class="input-group">
+                                <span class="input-group-text {{ freeshipping.from ? 'alert-success' }}">{{ 'Or activate free shipping from (€) :'|trans({}, 'colissimohomedelivery.bo.default') }}</span>
+                                <input type="number" name="{{ freeshipping_form.freeshipping_from.vars.full_name }}" class="form-control" value="{{ freeshipping.from }}" step="0.01">
+                                {% do freeshipping_form.freeshipping_from.setRendered %}
+                                <button class="btn btn-secondary" type="submit">{{ 'Save'|trans }}</button>
+                            </div>
+                        </div>
+                    </div>
+                {{ form_end(freeshipping_form) }}
+
+                <div class="alert alert-info">
+                    {{ 'You can create price slices by specifying a maximum cart weight and/or a maximum cart price.'|trans({}, 'colissimohomedelivery.bo.default') }}
+                    {{ 'The slices are ordered by maximum cart weight then by maximum cart price.'|trans({}, 'colissimohomedelivery.bo.default') }}
+                    {{ 'If a cart matches multiple slices, it will take the last slice following that order.'|trans({}, 'colissimohomedelivery.bo.default') }}
+                    {{ "If you don't specify a cart weight in a slice, it will have priority over the slices with weight."|trans({}, 'colissimohomedelivery.bo.default') }}
+                    {{ "If you don't specify a cart price in a slice, it will have priority over the other slices with the same weight."|trans({}, 'colissimohomedelivery.bo.default') }}
+                    {{ 'If you specify both, the cart will require to have a lower weight AND a lower price in order to match the slice.'|trans({}, 'colissimohomedelivery.bo.default') }}
+                </div>
+
+                <div class="slices">
+                    {% if areas is empty %}
+                        <div class="alert alert-warning">
+                            {{ 'You should first attribute shipping zones to the modules: '|trans({}, 'colissimohomedelivery.bo.default') }}
+                            <a href="/admin/configuration/shipping_zones">
+                                {{ 'manage shipping zones'|trans({}, 'colissimohomedelivery.bo.default') }}
+                            </a>
+                        </div>
+                    {% else %}
+                        {% for area in areas %}
+                            <div class="table-responsive mb-4">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <small>{{ 'Area : '|trans({}, 'colissimohomedelivery.bo.default') }}</small> {{ area.name }}
+                                            </th>
+                                            <th style="width:40%;">
+                                                <div id="area-freeshipping-{{ area.id }}" {{ freeshipping.active ? 'style="display:none;"' }}>
+                                                    <form action="{{ path('colissimo.home.delivery.edit.areafreeshipping') }}" method="post">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text {{ area.cart_amount is not null ? 'alert-success' }}">{{ 'Activate free shipping from (€) :'|trans({}, 'colissimohomedelivery.bo.default') }}</span>
+                                                            <input type="hidden" name="area-id" value="{{ area.id }}">
+                                                            <input type="number" step="0.01" name="cart-amount" class="form-control" value="{{ area.cart_amount }}">
+                                                            <button class="btn btn-secondary" type="submit">{{ 'Save'|trans }}</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th>{{ 'Weight up to ... kg'|trans({}, 'colissimohomedelivery.bo.default') }}</th>
+                                            <th>{{ 'Untaxed Price up to ... ($)'|trans({}, 'colissimohomedelivery.bo.default') }}</th>
+                                            <th>{{ 'Shipping Price ($)'|trans({}, 'colissimohomedelivery.bo.default') }}</th>
+                                            <th>{{ 'Actions'|trans({}, 'colissimohomedelivery.bo.default') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for slice in area.slices %}
+                                            <tr class="js-slice" data-area="{{ area.id }}" data-id="{{ slice.id }}">
+                                                <td><input type="text" data-field="max-weight" class="form-control js-slice-max-weight" value="{{ slice.max_weight }}" data-old="{{ slice.max_weight }}"></td>
+                                                <td><input type="text" data-field="max-price" class="form-control js-slice-max-price" value="{{ slice.max_price }}" data-old="{{ slice.max_price }}"></td>
+                                                <td><input type="text" data-field="shipping" class="form-control js-slice-shipping" value="{{ slice.shipping }}" data-old="{{ slice.shipping }}"></td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        {% if is_granted('UPDATE', {resource: 'admin.module', module: 'ColissimoHomeDelivery'}) %}
+                                                            <a class="btn btn-secondary btn-sm js-slice-save" title="{{ 'Save this price slice'|trans({}, 'colissimohomedelivery.bo.default') }}"><i class="bi bi-save"></i></a>
+                                                        {% endif %}
+                                                        {% if is_granted('DELETE', {resource: 'admin.module', module: 'ColissimoHomeDelivery'}) %}
+                                                            <a class="btn btn-secondary btn-sm js-slice-delete" title="{{ 'Delete this price slice'|trans({}, 'colissimohomedelivery.bo.default') }}" data-id="{{ slice.id }}"><i class="bi bi-trash"></i></a>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+
+                                        {% if is_granted('CREATE', {resource: 'admin.module', module: 'ColissimoHomeDelivery'}) %}
+                                            <tr class="js-slice-new" data-area="{{ area.id }}" data-id="0">
+                                                <td><input type="text" data-field="max-weight" class="form-control js-slice-max-weight" value=""></td>
+                                                <td><input type="text" data-field="max-price" class="form-control js-slice-max-price" value=""></td>
+                                                <td><input type="text" data-field="shipping" class="form-control js-slice-shipping" value=""></td>
+                                                <td>
+                                                    <a class="btn btn-secondary btn-sm js-slice-add" title="{{ 'Add this price slice'|trans({}, 'colissimohomedelivery.bo.default') }}"><i class="bi bi-plus-lg"></i></a>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            {# ===================== TAX RULE TAB ===================== #}
+            <div id="tax_rule" class="tab-pane fade {{ tab == 'tax_rule' ? 'show active' }}">
+                <h4 class="mb-3">{{ 'Colissimo Tax Rule configuration'|trans({}, 'colissimohomedelivery.bo.default') }}</h4>
+
+                {{ form_start(tax_rule_form, {'action': path('colissimo_home_delivery_tax_rule_save'), 'method': 'post'}) }}
+                    <div class="mb-3">
+                        {{ form_label(tax_rule_form.tax_rule_id) }}
+                        {{ form_widget(tax_rule_form.tax_rule_id) }}
+                        {{ form_errors(tax_rule_form.tax_rule_id) }}
+                    </div>
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-save me-1"></i>{{ 'Save'|trans }}</button>
+                {{ form_end(tax_rule_form) }}
+            </div>
+        </div>
+
+        {# Generic message modal (Bootstrap 5) #}
+        <div class="modal fade" id="colissimo_home_delivery_dialog" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ 'Message'|trans({}, 'colissimohomedelivery.bo.default') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

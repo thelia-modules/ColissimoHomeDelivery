@@ -1,0 +1,142 @@
+{# Colissimo Home Delivery - back-office configuration scripts (default-twig BO, vanilla JS) #}
+
+<template id="tpl-slice">
+    <tr class="js-slice">
+        <td><input type="text" data-field="max-weight" class="form-control js-slice-max-weight" value="" data-old=""></td>
+        <td><input type="text" data-field="max-price" class="form-control js-slice-max-price" value="" data-old=""></td>
+        <td><input type="text" data-field="shipping" class="form-control js-slice-shipping" value="" data-old=""></td>
+        <td>
+            <div class="btn-group">
+                <a class="btn btn-secondary btn-sm js-slice-save" title="{{ 'Save this price slice'|trans({}, 'colissimohomedelivery.bo.default') }}"><i class="bi bi-save"></i></a>
+                <a class="btn btn-secondary btn-sm js-slice-delete" title="{{ 'Delete this price slice'|trans({}, 'colissimohomedelivery.bo.default') }}"><i class="bi bi-trash"></i></a>
+            </div>
+        </td>
+    </tr>
+</template>
+
+<script>
+(function () {
+    var config = {
+        urlAdd: '{{ path('colissimo.home.delivery.add.price-slice') }}',
+        urlDelete: '{{ path('colissimo.home.delivery.update.price-slice') }}',
+        urlSave: '{{ path('colissimo.home.delivery.add.price-slice') }}'
+    };
+
+    function ready(fn) {
+        if (document.readyState !== 'loading') { fn(); }
+        else { document.addEventListener('DOMContentLoaded', fn); }
+    }
+
+    ready(function () {
+        var tpl = document.getElementById('tpl-slice');
+        var slicesRoot = document.querySelector('.slices');
+        var dialogEl = document.getElementById('colissimo_home_delivery_dialog');
+
+        function showMessage(message) {
+            if (!dialogEl) { return; }
+            dialogEl.querySelector('.modal-body').innerHTML = message;
+            bootstrap.Modal.getOrCreateInstance(dialogEl).show();
+        }
+
+        function getSliceData(row) {
+            return {
+                id: row.getAttribute('data-id'),
+                area: row.getAttribute('data-area'),
+                shipping: (row.querySelector('.js-slice-shipping') || {}).value || '',
+                maxPrice: (row.querySelector('.js-slice-max-price') || {}).value || '',
+                maxWeight: (row.querySelector('.js-slice-max-weight') || {}).value || ''
+            };
+        }
+
+        function buildRow(slice) {
+            var frag = tpl.content.cloneNode(true);
+            var row = frag.querySelector('tr');
+            row.setAttribute('data-area', slice.areaId);
+            row.setAttribute('data-id', slice.id);
+            var mw = row.querySelector('.js-slice-max-weight');
+            var mp = row.querySelector('.js-slice-max-price');
+            var sh = row.querySelector('.js-slice-shipping');
+            mw.value = mw.dataset.old = slice.maxWeight;
+            mp.value = mp.dataset.old = slice.maxPrice;
+            sh.value = sh.dataset.old = slice.shipping;
+            var del = row.querySelector('.js-slice-delete');
+            if (del) { del.setAttribute('data-id', slice.id); }
+            return row;
+        }
+
+        function postSlice(url, data, onSuccess, onError) {
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: new URLSearchParams(data)
+            }).then(function (resp) {
+                return resp.json().then(function (json) { return { ok: resp.ok, json: json }; });
+            }).then(function (res) {
+                if (res.ok && res.json && res.json.success) { onSuccess(res.json); }
+                else {
+                    var msg = res.json && res.json.message
+                        ? (Array.isArray(res.json.message) ? res.json.message.join('<br>') : res.json.message)
+                        : 'Error';
+                    onError(msg);
+                }
+            }).catch(function () { onError('Error'); });
+        }
+
+        if (slicesRoot) {
+            slicesRoot.addEventListener('click', function (e) {
+                var addBtn = e.target.closest('.js-slice-add');
+                var saveBtn = e.target.closest('.js-slice-save');
+                var delBtn = e.target.closest('.js-slice-delete');
+
+                if (addBtn) {
+                    var newRow = addBtn.closest('tr');
+                    var data = getSliceData(newRow);
+                    postSlice(config.urlAdd, data, function (json) {
+                        newRow.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+                        newRow.parentNode.insertBefore(buildRow(json.slice), newRow);
+                    }, showMessage);
+                } else if (saveBtn) {
+                    var row = saveBtn.closest('tr');
+                    var sdata = getSliceData(row);
+                    postSlice(config.urlSave, sdata, function (json) {
+                        var built = buildRow(json.slice);
+                        row.parentNode.insertBefore(built, row);
+                        row.remove();
+                    }, showMessage);
+                } else if (delBtn) {
+                    var drow = delBtn.closest('tr');
+                    var ddata = getSliceData(drow);
+                    postSlice(config.urlDelete, ddata, function () { drow.remove(); }, showMessage);
+                }
+            });
+
+            slicesRoot.addEventListener('change', function (e) {
+                if (e.target.closest('.js-slice input, .js-slice')) {
+                    var row = e.target.closest('.js-slice');
+                    var saveBtn = row && row.querySelector('.js-slice-save');
+                    if (saveBtn) { saveBtn.classList.add('btn-success'); }
+                }
+            });
+        }
+
+        // Free shipping toggle: hide/show the "free shipping from" input and auto-submit
+        var fsToggle = document.getElementById('freeshipping-toggle');
+        var fsForm = document.getElementById('freeshippingform');
+        var fsFrom = document.getElementById('freeshipping-from');
+        if (fsToggle && fsForm) {
+            fsToggle.addEventListener('change', function () {
+                if (fsFrom) { fsFrom.style.display = fsToggle.checked ? 'none' : ''; }
+                fsForm.submit();
+            });
+        }
+
+        // Password reveal toggle
+        document.querySelectorAll('[data-action="toggle-password"]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(btn.getAttribute('data-target'));
+                if (input) { input.type = input.type === 'password' ? 'text' : 'password'; }
+            });
+        });
+    });
+})();
+</script>

@@ -27,6 +27,11 @@ class TaxRuleForm extends BaseForm
             );
     }
 
+    public static function getName(): string
+    {
+        return "colissimohomedelivery_tax_rule_form";
+    }
+
     private function getTaxRules(): array
     {
         $res = [];

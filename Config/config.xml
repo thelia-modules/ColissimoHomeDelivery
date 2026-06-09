@@ -9,16 +9,4 @@
         <loop name="colissimo.homedelivery.freeshipping" class="ColissimoHomeDelivery\Loop\ColissimoHomeDeliveryFreeShippingLoop" />
         <loop name="colissimo.homedelivery.area.freeshipping" class="ColissimoHomeDelivery\Loop\ColissimoHomeDeliveryAreaFreeShippingLoop" />
     </loops>
-
-    <forms>
-        <form name="colissimohomedelivery_form_configuration_form" class="ColissimoHomeDelivery\Form\ConfigurationForm" />
-        <form name="colissimohomedelivery_freeshipping_form" class="ColissimoHomeDelivery\Form\FreeShippingForm" />
-    </forms>
-
-    <hooks>
-        <hook id="colissimo.homedelivery.hooks" class="ColissimoHomeDelivery\Hook\HookManager">
-            <tag name="hook.event_listener" event="module.configuration" type="back" method="onModuleConfigure" />
-            <tag name="hook.event_listener" event="module.config-js" type="back" method="onModuleConfigJs" />
-        </hook>
-    </hooks>
 </config>
