@@ -301,10 +301,15 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
         $freeshippingIsActive = ColissimoHomeDeliveryFreeshippingQuery::create()->findOneById(1)->getActive();
 
         if (false === $freeshippingIsActive) {
-            $cartWeight = $request->getSession()->getSessionCart($this->getDispatcher())->getWeight();
-            $cartAmount = $request->getSession()->getSessionCart($this->getDispatcher())->getTaxedAmount($country, false);
+            if (null === $request || !$request->hasSession()) {
+                throw new DeliveryException('Colissimo delivery unavailable for your cart weight or delivery country');
+            }
 
-            if (null === $orderPostage = $this->getMinPostage($country, $cartWeight, $cartAmount, $request->getSession()->getLang()->getLocale())) {
+            $session = $request->getSession();
+            $cartWeight = $session->getSessionCart($this->getDispatcher())->getWeight();
+            $cartAmount = $session->getSessionCart($this->getDispatcher())->getTaxedAmount($country, false);
+
+            if (null === $orderPostage = $this->getMinPostage($country, $cartWeight, $cartAmount, $session->getLang()->getLocale())) {
                 throw new DeliveryException('Colissimo delivery unavailable for your cart weight or delivery country');
             }
         }

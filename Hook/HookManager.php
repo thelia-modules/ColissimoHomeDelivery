@@ -91,7 +91,7 @@ class HookManager extends BaseHook
     private function getCurrentLocale(): string
     {
         $request = $this->getRequest();
-        $lang = $request?->getSession()?->getAdminEditionLang();
+        $lang = (null !== $request && $request->hasSession()) ? $request->getSession()->getAdminEditionLang() : null;
 
         return $lang?->getLocale() ?? 'en_US';
     }

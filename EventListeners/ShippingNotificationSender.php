@@ -84,7 +84,10 @@ class ShippingNotificationSender extends BaseAction implements EventSubscriberIn
                 if ((int) ConfigQuery::read('one_domain_foreach_lang', 0) === 1) {
                     // We always query the DB here, as the Lang configuration (then the related URL) may change during the
                     // user session lifetime, and improper URLs could be generated. This is quite odd, okay, but may happen.
-                    $urlSite = LangQuery::create()->findPk($this->request->getSession()->getLang()->getId())->getUrl();
+                    $lang = (null !== $this->request && $this->request->hasSession())
+                        ? $this->request->getSession()->getLang()
+                        : $order->getLang();
+                    $urlSite = LangQuery::create()->findPk($lang->getId())->getUrl();
                 }
 
                 $this->parser->assign('customer_id', $customer->getId());

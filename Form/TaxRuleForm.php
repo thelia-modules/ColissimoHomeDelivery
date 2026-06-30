@@ -39,10 +39,14 @@ class TaxRuleForm extends BaseForm
         /** @var Request $request */
         $request = $this->request;
 
-        $lang = $request->getSession()?->getAdminEditionLang();
+        if ($request->hasSession() && null !== ($lang = $request->getSession()->getAdminEditionLang())) {
+            $locale = $lang->getLocale();
+        } else {
+            $locale = \Thelia\Model\LangQuery::create()->findOneByByDefault(true)?->getLocale() ?? 'en_US';
+        }
 
         $taxRules = TaxRuleI18nQuery::create()
-            ->filterByLocale($lang->getLocale())
+            ->filterByLocale($locale)
             ->find();
 
         $res[Translator::getInstance()->trans('Default Tax rule', [], ColissimoHomeDelivery::DOMAIN_NAME)] = null;
