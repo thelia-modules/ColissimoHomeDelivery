@@ -19,7 +19,8 @@
     var config = {
         urlAdd: '{{ path('colissimo.home.delivery.add.price-slice') }}',
         urlDelete: '{{ path('colissimo.home.delivery.update.price-slice') }}',
-        urlSave: '{{ path('colissimo.home.delivery.add.price-slice') }}'
+        urlSave: '{{ path('colissimo.home.delivery.add.price-slice') }}',
+        csrfToken: '{{ assignToken() }}'
     };
 
     function ready(fn) {
@@ -65,7 +66,8 @@
         }
 
         function postSlice(url, data, onSuccess, onError) {
-            fetch(url, {
+            var tokenUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + '_token=' + encodeURIComponent(config.csrfToken);
+            fetch(tokenUrl, {
                 method: 'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 body: new URLSearchParams(data)

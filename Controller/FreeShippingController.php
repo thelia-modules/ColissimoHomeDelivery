@@ -31,6 +31,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Thelia\Controller\Admin\BaseAdminController;
 
+use Thelia\Core\Security\Exception\TokenAuthenticationException;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Model\AreaQuery;
@@ -88,6 +89,16 @@ class FreeShippingController extends BaseAdminController
         if (null !== $response = $this
                 ->checkAuth(array(AdminResources::MODULE), array('ColissimoHomeDelivery'), AccessManager::UPDATE)) {
             return $response;
+        }
+
+        try {
+            $this->getTokenProvider()->checkToken(
+                (string) $this->getRequest()->query->get('_token')
+            );
+        } catch (TokenAuthenticationException $e) {
+            return $this->generateRedirect(
+                URL::getInstance()->absoluteUrl('/admin/module/ColissimoHomeDelivery')
+            );
         }
 
         try {

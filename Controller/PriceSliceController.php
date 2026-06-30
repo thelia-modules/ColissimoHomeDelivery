@@ -11,6 +11,7 @@ use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryPriceSlicesQuery;
 use Propel\Runtime\Map\TableMap;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
+use Thelia\Core\Security\Exception\TokenAuthenticationException;
 
 class PriceSliceController extends BaseAdminController
 {
@@ -45,6 +46,16 @@ class PriceSliceController extends BaseAdminController
             'message' => '',
             'slice' => null
         ];
+
+        try {
+            $this->getTokenProvider()->checkToken(
+                (string) $this->getRequest()->query->get('_token')
+            );
+        } catch (TokenAuthenticationException $e) {
+            $responseData['message'] = [$e->getMessage()];
+
+            return $this->jsonResponse(json_encode($responseData), 403);
+        }
 
         $messages = [];
         $response = null;
@@ -158,6 +169,16 @@ class PriceSliceController extends BaseAdminController
             'message' => '',
             'slice' => null
         ];
+
+        try {
+            $this->getTokenProvider()->checkToken(
+                (string) $this->getRequest()->query->get('_token')
+            );
+        } catch (TokenAuthenticationException $e) {
+            $responseData['message'] = $e->getMessage();
+
+            return $this->jsonResponse(json_encode($responseData), 403);
+        }
 
         $response = null;
 
