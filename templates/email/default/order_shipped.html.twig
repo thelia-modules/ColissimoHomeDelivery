@@ -1,0 +1,27 @@
+{% extends "email-layout.html.twig" %}
+
+{# Do not provide a "Open in browser" link #}
+{% block browser %}{% endblock %}
+{# No pre-header #}
+{% block pre_header %}{% endblock %}
+
+{# Subject #}
+{% block email_subject %}{{ 'Your order confirmation Nº %ref'|trans({'%ref': order_ref}, 'colissimohomedelivery.email.default', locale) }}{% endblock %}
+
+{# Title #}
+{% block email_title %}{% endblock %}
+
+{# Content #}
+{% block email_content %}
+    {% for customer in loop('customer.politesse', 'customer', {id: customer_id, current: '0'}) %}
+        <p>{{ 'Hello'|trans({}, 'colissimohomedelivery.email.default', locale) }}
+            {{ customer.FIRSTNAME }} {{ customer.LASTNAME }},
+        </p>
+    {% endfor %}
+
+    <p>{{ 'We are pleased to inform you that your order number'|trans({}, 'colissimohomedelivery.email.default', locale) }} {{ order_ref }} {{ 'has been shipped on'|trans({}, 'colissimohomedelivery.email.default', locale) }} {{ format_date(update_date, 'date') }}.</p>
+    <p>{{ 'Your order has been taking care of by La Poste.'|trans({}, 'colissimohomedelivery.email.default', locale) }} {{ 'Your tracking number is '|trans({}, 'colissimohomedelivery.email.default', locale) }} <strong>{{ package }}</strong> {{ ' and allows you to follow your package online at <a href="https://www.colissimo.fr/portail_colissimo/suivreResultat.do?parcelnumber=%package">https://www.colissimo.fr/portail_colissimo/suivreResultat</a>'|trans({'%package': package}, 'colissimohomedelivery.email.default', locale)|raw }}</p>
+    <p>{{ 'Thank you for your shopping with us and hope to see you soon'|trans({}, 'colissimohomedelivery.email.default', locale) }}{% if store_url != '' %}{{ ' on '|trans({}, 'colissimohomedelivery.email.default', locale) }}<a href="{{ store_url }}">{{ store_url }}</a>{% else %}.{% endif %}</p>
+    <p>{{ 'See you soon,'|trans({}, 'colissimohomedelivery.email.default', locale) }}<br/>
+        {{ 'Your shop '|trans({}, 'colissimohomedelivery.email.default', locale) }} {{ store_name }}</p>
+{% endblock %}

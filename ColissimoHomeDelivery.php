@@ -19,6 +19,7 @@
 
 namespace ColissimoHomeDelivery;
 
+use ColissimoHomeDelivery\DependencyInjection\Compiler\RegisterEmailTranslationsPass;
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryAreaFreeshippingQuery;
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryFreeshipping;
 use ColissimoHomeDelivery\Model\ColissimoHomeDeliveryFreeshippingQuery;
@@ -27,6 +28,7 @@ use PDO;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Propel;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\Finder\Finder;
 use Thelia\Core\Install\Database;
@@ -369,10 +371,17 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
         return 'delivery';
     }
 
+    public static function getCompilers(): array
+    {
+        return [
+            [new RegisterEmailTranslationsPass(__DIR__, self::DOMAIN_NAME), PassConfig::TYPE_BEFORE_OPTIMIZATION],
+        ];
+    }
+
     public static function configureServices(ServicesConfigurator $servicesConfigurator): void
     {
         $servicesConfigurator->load(self::getModuleCode().'\\', __DIR__)
-            ->exclude([THELIA_MODULE_DIR . ucfirst(self::getModuleCode()). "/I18n/*"])
+            ->exclude([THELIA_MODULE_DIR . ucfirst(self::getModuleCode()). "/I18n/*", __DIR__ . "/DependencyInjection/*"])
             ->autowire(true)
             ->autoconfigure(true);
     }
