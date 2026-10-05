@@ -93,7 +93,7 @@ class FreeShippingController extends BaseAdminController
 
         try {
             $this->getTokenProvider()->checkToken(
-                (string) $this->getRequest()->query->get('_token')
+                (string) $this->getRequest()->request->get('_token')
             );
         } catch (TokenAuthenticationException $e) {
             return $this->generateRedirect(
