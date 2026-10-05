@@ -49,7 +49,7 @@ class PriceSliceController extends BaseAdminController
 
         try {
             $this->getTokenProvider()->checkToken(
-                (string) $this->getRequest()->query->get('_token')
+                (string) $this->getRequest()->request->get('_token')
             );
         } catch (TokenAuthenticationException $e) {
             $responseData['message'] = [$e->getMessage()];
@@ -172,7 +172,7 @@ class PriceSliceController extends BaseAdminController
 
         try {
             $this->getTokenProvider()->checkToken(
-                (string) $this->getRequest()->query->get('_token')
+                (string) $this->getRequest()->request->get('_token')
             );
         } catch (TokenAuthenticationException $e) {
             $responseData['message'] = $e->getMessage();

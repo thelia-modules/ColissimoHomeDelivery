@@ -66,11 +66,12 @@
         }
 
         function postSlice(url, data, onSuccess, onError) {
-            var tokenUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + '_token=' + encodeURIComponent(config.csrfToken);
-            fetch(tokenUrl, {
+            var body = new URLSearchParams(data);
+            body.set('_token', config.csrfToken);
+            fetch(url, {
                 method: 'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                body: new URLSearchParams(data)
+                body: body
             }).then(function (resp) {
                 return resp.json().then(function (json) { return { ok: resp.ok, json: json }; });
             }).then(function (res) {
