@@ -21,7 +21,6 @@ use Thelia\Action\BaseAction;
 use Thelia\Core\Event\Order\OrderEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\HttpFoundation\Request;
-use Thelia\Core\Template\ParserInterface;
 use Thelia\Mailer\MailerFactory;
 use Thelia\Model\ConfigQuery;
 use Thelia\Model\LangQuery;
@@ -31,14 +30,11 @@ class ShippingNotificationSender extends BaseAction implements EventSubscriberIn
 {
     /** @var MailerFactory */
     protected $mailer;
-    /** @var ParserInterface */
-    protected $parser;
     /** @var Request */
     protected $request;
 
-    public function __construct(ParserInterface $parser, MailerFactory $mailer, RequestStack $requestStack)
+    public function __construct(MailerFactory $mailer, RequestStack $requestStack)
     {
-        $this->parser = $parser;
         $this->mailer = $mailer;
         $this->request = $requestStack->getCurrentRequest();
     }
@@ -90,18 +86,21 @@ class ShippingNotificationSender extends BaseAction implements EventSubscriberIn
                     $urlSite = LangQuery::create()->findPk($lang->getId())->getUrl();
                 }
 
-                $this->parser->assign('customer_id', $customer->getId());
-                $this->parser->assign('order_ref', $order->getRef());
-                $this->parser->assign('order_date', $order->getCreatedAt());
-                $this->parser->assign('update_date', $order->getUpdatedAt());
-                $this->parser->assign('package', $order->getDeliveryRef());
-                $this->parser->assign('store_name', ConfigQuery::read('store_name'));
-                $this->parser->assign('store_url', $urlSite);
-
                 $message
                     ->setLocale($order->getLang()->getLocale());
 
-                $this->mailer->sendEmailToCustomer($message->getName(), $customer);
+                $this->mailer->sendEmailToCustomer(
+                    $message->getName(),
+                    $customer,
+                    [
+                        'order_ref' => $order->getRef(),
+                        'order_date' => $order->getCreatedAt(),
+                        'update_date' => $order->getUpdatedAt(),
+                        'package' => $order->getDeliveryRef(),
+                        'store_name' => ConfigQuery::read('store_name'),
+                        'store_url' => $urlSite,
+                    ]
+                );
             }
         }
     }
