@@ -14,6 +14,7 @@
  */
 namespace ColissimoHomeDelivery\Controller;
 
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Event\PdfEvent;
 use Thelia\Core\Event\TheliaEvents;
@@ -22,6 +23,10 @@ use Thelia\Log\Tlog;
 class LabelController extends BaseAdminController
 {
     const LABEL_DIRECTORY = THELIA_LOCAL_DIR . 'colissimo-label';
+
+    public function __construct(private readonly EventDispatcherInterface $eventDispatcher)
+    {
+    }
 
     /**
      * [DEPRECATED] Generates the customs invoice.
@@ -46,7 +51,7 @@ class LabelController extends BaseAdminController
         try {
             $pdfEvent = new PdfEvent($html);
 
-            $this->dispatch($pdfEvent, TheliaEvents::GENERATE_PDF);
+            $this->eventDispatcher->dispatch($pdfEvent, TheliaEvents::GENERATE_PDF);
 
             $pdfFileName = self::LABEL_DIRECTORY . DS . $orderRef . '-customs-invoice.pdf';
 
