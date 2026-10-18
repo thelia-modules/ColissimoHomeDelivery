@@ -60,7 +60,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
     /**
      * @throws \Propel\Runtime\Exception\PropelException
      */
-    public function postActivation(ConnectionInterface $con = null): void
+    public function postActivation(?ConnectionInterface $con = null): void
     {
         // Create table if required.
         if (!self::getConfigValue('is_initialized', false)) {
@@ -118,7 +118,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
     /**
      * {@inheritDoc}
      */
-    public function update($currentVersion, $newVersion, ConnectionInterface $con = null): void
+    public function update($currentVersion, $newVersion, ?ConnectionInterface $con = null): void
     {
         $finder = (new Finder())
             ->files()
@@ -294,7 +294,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
      *
      * @throws DeliveryException
      */
-    public function getPostage(Country $country, State $state = null): OrderPostage|float
+    public function getPostage(Country $country, ?State $state = null): OrderPostage|float
     {
         $request = $this->getRequest();
 
@@ -330,7 +330,7 @@ class ColissimoHomeDelivery extends AbstractDeliveryModuleWithState
      *
      * @return bool
      */
-    public function isValidDelivery(Country $country, State $state = null): bool
+    public function isValidDelivery(Country $country, ?State $state = null): bool
     {
         if (empty($this->getAllAreasForCountry($country))) {
             return false;
