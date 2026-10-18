@@ -76,7 +76,7 @@ class FreeShippingController extends BaseAdminController
                 )
             );
         } catch (\Exception $e) {
-            $response = JsonResponse::create(array('error' => $e->getMessage()), 500);
+            $response = new JsonResponse(array('error' => $e->getMessage()), 500);
         }
         return $response;
     }
